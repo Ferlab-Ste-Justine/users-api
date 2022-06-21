@@ -1,7 +1,7 @@
 {
-    "name": "include-users-api",
+    "name": "users-api",
     "version": "1.0.0",
-    "description": "RESTful API to manage and retrieve Include users",
+    "description": "RESTful API to manage and retrieve users",
     "main": "index.ts",
     "license": "ISC",
     "engines": {

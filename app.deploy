@@ -3,7 +3,7 @@ deploy {
     architecture_type = "aws-ecs-service-type-1"
     jenkinsfile_name  = "app.deploy" 
     prd_cidr          = "0.0.0.0/0"
-    projectName = "include-users-api"
+    projectName = "users-api"
     environments = "qa,prd"
     docker_image_type = "alpine"
     internal_app = "false"

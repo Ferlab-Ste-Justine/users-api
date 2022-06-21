@@ -7,6 +7,6 @@ services:
     ports:
       - 5432:5432
     environment:
-      POSTGRES_USER: include
-      POSTGRES_PASSWORD: include-password
-      POSTGRES_DB: include_users
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: users

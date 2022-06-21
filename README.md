@@ -1,4 +1,4 @@
-# Include Users API
+# Users API
 
 ## Pre-requisites
 

@@ -19,7 +19,7 @@ export const getToken = (expire = 1000, sub = '12345-678-90abcdef'): string =>
         {
             iss: 'http://localhost:8080/auth/realms/master',
             sub: sub,
-            aud: 'include-users-api',
+            aud: 'users-api',
             jti: '2c166d55-5ae6-4fb4-9daa-a1d5e1f535d7',
             user_id: sub,
             typ: 'Bearer',
