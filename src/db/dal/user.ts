@@ -1,12 +1,16 @@
 import createHttpError from 'http-errors';
 import { StatusCodes } from 'http-status-codes';
+
 import { validateUserRegistrationPayload } from '../../utils/userValidator';
 import UserModel, { IUserInput, IUserOuput } from '../models/User';
 
-const sanitizeInputPayload = (payload: IUserInput) => {
-    const { id, keycloak_id, completed_registration, creation_date, ...rest } = payload;
-    return rest;
-};
+const sanitizeInputPayload = (payload: IUserInput) => ({
+    ...payload,
+    id: undefined,
+    keycloak_id: undefined,
+    completed_registration: undefined,
+    creation_date: undefined,
+});
 
 export const searchUsers = async (pageSize: number, pageIndex: number) => {
     const results = await UserModel.findAndCountAll({

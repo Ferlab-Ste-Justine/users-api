@@ -1,12 +1,15 @@
-import UserSetModel, { IUserSetsInput, IUserSetsOutput } from '../models/UserSets';
-import { Op } from 'sequelize';
 import createHttpError from 'http-errors';
 import { StatusCodes } from 'http-status-codes';
+import { Op } from 'sequelize';
 
-const sanitizeInputPayload = (payload: IUserSetsInput) => {
-    const { id, keycloak_id, creation_date, ...rest } = payload;
-    return rest;
-};
+import UserSetModel, { IUserSetsInput, IUserSetsOutput } from '../models/UserSets';
+
+const sanitizeInputPayload = (payload: IUserSetsInput) => ({
+    ...payload,
+    id: undefined,
+    keycloak_id: undefined,
+    creation_date: undefined,
+});
 
 export const getById = async (keycloak_id: string, id: string): Promise<IUserSetsOutput> => {
     const filter = await UserSetModel.findOne({
@@ -22,20 +25,18 @@ export const getById = async (keycloak_id: string, id: string): Promise<IUserSet
     return filter;
 };
 
-export const getAll = async (keycloak_id: string): Promise<IUserSetsOutput[]> => {
-    return await UserSetModel.findAll({
+export const getAll = async (keycloak_id: string): Promise<IUserSetsOutput[]> =>
+    await UserSetModel.findAll({
         where: { keycloak_id },
     });
-};
 
-export const create = async (keycloak_id: string, payload: IUserSetsInput): Promise<IUserSetsOutput> => {
-    return await UserSetModel.create({
+export const create = async (keycloak_id: string, payload: IUserSetsInput): Promise<IUserSetsOutput> =>
+    await UserSetModel.create({
         ...payload,
         keycloak_id,
         creation_date: new Date(),
         updated_date: new Date(),
     });
-};
 
 export const update = async (keycloak_id: string, id: string, payload: IUserSetsInput): Promise<IUserSetsOutput> => {
     const results = await UserSetModel.update(

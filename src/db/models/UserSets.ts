@@ -1,4 +1,5 @@
 import { DataTypes, Model } from 'sequelize';
+
 import sequelizeConnection from '../config';
 
 interface IUserSetAttributes {
@@ -11,8 +12,8 @@ interface IUserSetAttributes {
     updated_date: Date;
 }
 
-export interface IUserSetsInput extends IUserSetAttributes {}
-export interface IUserSetsOutput extends IUserSetAttributes {}
+export type IUserSetsInput = IUserSetAttributes;
+export type IUserSetsOutput = IUserSetAttributes;
 
 class UserSetModel extends Model<IUserSetAttributes, IUserSetsInput> implements IUserSetAttributes {
     public id!: number;

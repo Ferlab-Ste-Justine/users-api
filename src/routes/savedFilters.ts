@@ -1,6 +1,7 @@
 import { Router } from 'express';
-import { create, destroy, getAll, getById, update, updateAsDefault } from '../db/dal/savedFilter';
 import { StatusCodes } from 'http-status-codes';
+
+import { create, destroy, getAll, getById, update, updateAsDefault } from '../db/dal/savedFilter';
 
 // Handles requests made to /saved-filters
 const savedFiltersRouter = Router();
@@ -67,7 +68,7 @@ savedFiltersRouter.put('/:id/default', async (req, res, next) => {
 savedFiltersRouter.delete('/:id', async (req, res, next) => {
     try {
         const keycloak_id = req['kauth']?.grant?.access_token?.content?.sub;
-        const result = await destroy(keycloak_id, req.params.id);
+        await destroy(keycloak_id, req.params.id);
         res.status(StatusCodes.OK).send(req.params.id);
     } catch (e) {
         next(e);

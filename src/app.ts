@@ -1,11 +1,12 @@
 import cors from 'cors';
 import express, { Express } from 'express';
 import { Keycloak } from 'keycloak-connect';
+
 import { globalErrorHandler, globalErrorLogger } from './errors';
-import usersRouter from './routes/user';
-import savedFiltersRouter from './routes/savedFilters';
 import publicRouter from './routes/public';
-import userSetsRouter from "./routes/userSets";
+import savedFiltersRouter from './routes/savedFilters';
+import usersRouter from './routes/user';
+import userSetsRouter from './routes/userSets';
 
 export default (keycloak: Keycloak): Express => {
     const app = express();

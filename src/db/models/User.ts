@@ -1,4 +1,5 @@
 import { DataTypes, Model } from 'sequelize';
+
 import sequelizeConnection from '../config';
 
 interface IUserAttributes {
@@ -25,8 +26,8 @@ interface IUserAttributes {
     config?: any;
 }
 
-export interface IUserInput extends IUserAttributes {}
-export interface IUserOuput extends IUserAttributes {}
+export type IUserInput = IUserAttributes;
+export type IUserOuput = IUserAttributes;
 
 class UserModel extends Model<IUserAttributes, IUserInput> implements IUserAttributes {
     public id!: number;

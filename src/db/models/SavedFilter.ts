@@ -1,4 +1,5 @@
 import { DataTypes, Model } from 'sequelize';
+
 import sequelizeConnection from '../config';
 
 interface ISavedFilterAttributes {
@@ -12,8 +13,8 @@ interface ISavedFilterAttributes {
     updated_date: Date;
 }
 
-export interface ISavedFilterInput extends ISavedFilterAttributes {}
-export interface ISavedFilterOutput extends ISavedFilterAttributes {}
+export type ISavedFilterInput = ISavedFilterAttributes;
+export type ISavedFilterOutput = ISavedFilterAttributes;
 
 class SavedFilterModel extends Model<ISavedFilterAttributes, ISavedFilterInput> implements ISavedFilterAttributes {
     public id!: number;

@@ -1,10 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
-import { getReasonPhrase, StatusCodes } from 'http-status-codes';
 import { HttpError } from 'http-errors';
-import {
-    BaseError,
-    UniqueConstraintError,
-} from 'sequelize';
+import { getReasonPhrase, StatusCodes } from 'http-status-codes';
+import { BaseError, UniqueConstraintError } from 'sequelize';
 
 export const globalErrorHandler = (err: unknown, _req: Request, res: Response, _next: NextFunction): void => {
     if (err instanceof UniqueConstraintError) {
@@ -25,6 +22,7 @@ export const globalErrorHandler = (err: unknown, _req: Request, res: Response, _
 };
 
 export const globalErrorLogger = (err: unknown, _req: Request, _res: Response, next: NextFunction): void => {
+    // eslint-disable-next-line
     console.log(err);
     next(err);
 };

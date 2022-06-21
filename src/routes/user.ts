@@ -1,6 +1,7 @@
 import { Router } from 'express';
-import { completeRegistration, createUser, getUserById, updateUser, searchUsers } from '../db/dal/user';
 import { StatusCodes } from 'http-status-codes';
+
+import { completeRegistration, createUser, getUserById, searchUsers, updateUser } from '../db/dal/user';
 
 // Handles requests made to /users
 const usersRouter = Router();

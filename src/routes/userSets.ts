@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import {create, destroy, getAll, getById, update} from '../db/dal/userSets';
+
+import { create, destroy, getAll, getById, update } from '../db/dal/userSets';
 
 // Handles requests made to /user-sets
 const userSetsRouter = Router();
