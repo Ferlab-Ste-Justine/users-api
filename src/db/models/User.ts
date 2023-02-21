@@ -15,7 +15,8 @@ interface IUserAttributes {
     roles?: string[];
     affiliation?: string;
     portal_usages?: string[];
-    research_area?: string;
+    research_areas?: string[];
+    research_area_description?: string;
     creation_date: Date;
     updated_date: Date;
     consent_date?: Date;
@@ -32,7 +33,6 @@ export type IUserOuput = IUserAttributes;
 class UserModel extends Model<IUserAttributes, IUserInput> implements IUserAttributes {
     public id!: number;
     public keycloak_id!: string;
-    public commercial_use_reason!: string;
     public accepted_terms!: boolean;
     public understand_disclaimer!: boolean;
     public completed_registration!: boolean;
@@ -63,7 +63,8 @@ UserModel.init(
         roles: DataTypes.ARRAY(DataTypes.TEXT),
         affiliation: DataTypes.TEXT,
         portal_usages: DataTypes.ARRAY(DataTypes.TEXT),
-        research_area: DataTypes.TEXT,
+        research_area_description: DataTypes.TEXT,
+        research_areas: DataTypes.ARRAY(DataTypes.TEXT),
         creation_date: {
             type: DataTypes.DATE,
             defaultValue: new Date(),
