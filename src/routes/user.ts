@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 import { completeRegistration, createUser, getUserById, searchUsers, updateUser } from '../db/dal/user';
+import { keycloakRealm } from '../env';
+import { getUserValidator } from '../utils/userValidator';
 
 // Handles requests made to /users
 const usersRouter = Router();
@@ -51,7 +53,7 @@ usersRouter.put('/', async (req, res, next) => {
 usersRouter.put('/complete-registration', async (req, res, next) => {
     try {
         const keycloak_id = req['kauth']?.grant?.access_token?.content?.sub;
-        const result = await completeRegistration(keycloak_id, req.body);
+        const result = await completeRegistration(keycloak_id, req.body, getUserValidator(keycloakRealm));
         res.status(StatusCodes.OK).send(result);
     } catch (e) {
         next(e);

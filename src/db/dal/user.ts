@@ -1,7 +1,7 @@
 import createHttpError from 'http-errors';
 import { StatusCodes } from 'http-status-codes';
 
-import { validateUserRegistrationPayload } from '../../utils/userValidator';
+import { UserValidator } from '../../utils/userValidator';
 import UserModel, { IUserInput, IUserOuput } from '../models/User';
 
 const sanitizeInputPayload = (payload: IUserInput) => ({
@@ -85,8 +85,12 @@ export const updateUser = async (keycloak_id: string, payload: IUserInput): Prom
     return results[1][0];
 };
 
-export const completeRegistration = async (keycloak_id: string, payload: IUserInput): Promise<IUserOuput> => {
-    if (!validateUserRegistrationPayload(payload)) {
+export const completeRegistration = async (
+    keycloak_id: string,
+    payload: IUserInput,
+    validator: UserValidator,
+): Promise<IUserOuput> => {
+    if (!validator(payload)) {
         throw createHttpError(
             StatusCodes.BAD_REQUEST,
             'Some required fields are missing to complete user registration',
