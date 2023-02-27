@@ -2,7 +2,9 @@ import cors from 'cors';
 import express, { Express } from 'express';
 import { Keycloak } from 'keycloak-connect';
 
+import { adminRoleName } from './env';
 import { globalErrorHandler, globalErrorLogger } from './errors';
+import adminRouter from './routes/admin';
 import publicRouter from './routes/public';
 import savedFiltersRouter from './routes/savedFilters';
 import usersRouter from './routes/user';
@@ -25,6 +27,7 @@ export default (keycloak: Keycloak): Express => {
     app.use('/user', keycloak.protect(), usersRouter);
     app.use('/saved-filters', keycloak.protect(), savedFiltersRouter);
     app.use('/user-sets', keycloak.protect(), userSetsRouter);
+    app.use('/admin', keycloak.protect('realm:' + adminRoleName), adminRouter);
 
     app.use(globalErrorLogger, globalErrorHandler);
 

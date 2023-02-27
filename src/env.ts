@@ -13,3 +13,5 @@ export const dbPort: number = Number.parseInt(process.env.PGPORT);
 export const dbName = process.env.PGDATABASE;
 export const dbUser = process.env.PGUSER;
 export const dbPassword = process.env.PGPASSWORD;
+
+export const adminRoleName = process.env.ADMIN_ROLE_NAME || 'admin';
