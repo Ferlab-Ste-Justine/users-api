@@ -23,6 +23,14 @@ const keycloak = new Keycloak({}, keycloakConfig);
 
 const app = buildApp(keycloak);
 
+const k: any = keycloak;
+const originalValidateGrant = k.grantManager.validateGrant;
+k.grantManager.validateGrant = (grant) =>
+    originalValidateGrant.call(k.grantManager, grant).catch((err) => {
+        console.error('Grant Validation Error', err);
+        throw err;
+    });
+console.log((keycloak as any).config);
 app.listen(port, async () => {
     // eslint-disable-next-line no-console
     console.log(`⚡️ Listening on port ${port} ⚡️`);

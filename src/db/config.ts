@@ -1,5 +1,4 @@
 import { Sequelize } from 'sequelize';
-
 import { dbHost, dbName, dbPassword, dbPort, dbUser } from '../env';
 
 const sequelizeConnection = new Sequelize(dbName, dbUser, dbPassword, {

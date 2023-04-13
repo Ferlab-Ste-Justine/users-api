@@ -1,5 +1,4 @@
 import { DataTypes, Model } from 'sequelize';
-
 import sequelizeConnection from '../config';
 
 interface IUserAttributes {
@@ -10,13 +9,15 @@ interface IUserAttributes {
     era_commons_id?: string;
     nih_ned_id?: string;
     email?: string;
+    linkedin?: string;
+    public_email?: string;
     external_individual_fullname?: string;
     external_individual_email?: string;
+    profile_image_key?: string;
     roles?: string[];
     affiliation?: string;
     portal_usages?: string[];
-    research_areas?: string[];
-    research_area_description?: string;
+    research_area?: string;
     creation_date: Date;
     updated_date: Date;
     consent_date?: Date;
@@ -24,20 +25,25 @@ interface IUserAttributes {
     understand_disclaimer: boolean;
     commercial_use_reason?: string;
     completed_registration: boolean;
+    deleted: boolean;
     config?: any;
 }
 
-export type IUserInput = IUserAttributes;
-export type IUserOuput = IUserAttributes;
+export interface IUserInput extends IUserAttributes {}
+export interface IUserOuput extends IUserAttributes {}
 
 class UserModel extends Model<IUserAttributes, IUserInput> implements IUserAttributes {
     public id!: number;
     public keycloak_id!: string;
+    public commercial_use_reason!: string;
     public accepted_terms!: boolean;
     public understand_disclaimer!: boolean;
     public completed_registration!: boolean;
     public creation_date!: Date;
     public updated_date!: Date;
+    public deleted!: boolean;
+    public roles!: string[];
+    public portal_usages!: string[];
 }
 
 UserModel.init(
@@ -52,19 +58,25 @@ UserModel.init(
             type: DataTypes.STRING,
             allowNull: false,
         },
-        first_name: DataTypes.STRING,
-        last_name: DataTypes.STRING,
+        deleted: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+        },
+        first_name: DataTypes.CITEXT,
+        last_name: DataTypes.CITEXT,
         era_commons_id: DataTypes.STRING,
         nih_ned_id: DataTypes.STRING,
         commercial_use_reason: DataTypes.STRING,
         email: DataTypes.STRING,
         external_individual_fullname: DataTypes.TEXT,
         external_individual_email: DataTypes.TEXT,
-        roles: DataTypes.ARRAY(DataTypes.TEXT),
-        affiliation: DataTypes.TEXT,
-        portal_usages: DataTypes.ARRAY(DataTypes.TEXT),
-        research_area_description: DataTypes.TEXT,
-        research_areas: DataTypes.ARRAY(DataTypes.TEXT),
+        roles: DataTypes.ARRAY(DataTypes.CITEXT),
+        affiliation: DataTypes.CITEXT,
+        public_email: DataTypes.TEXT,
+        linkedin: DataTypes.TEXT,
+        portal_usages: DataTypes.ARRAY(DataTypes.CITEXT),
+        research_area: DataTypes.TEXT,
+        profile_image_key: DataTypes.TEXT,
         creation_date: {
             type: DataTypes.DATE,
             defaultValue: new Date(),

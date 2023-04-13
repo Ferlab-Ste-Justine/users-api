@@ -1,9 +1,8 @@
 import { DataTypes, Model } from 'sequelize';
-
 import sequelizeConnection from '../config';
 
 interface IUserSetAttributes {
-    id: number;
+    id: string;
     keycloak_id: string;
     content: any;
     alias: string;
@@ -12,11 +11,11 @@ interface IUserSetAttributes {
     updated_date: Date;
 }
 
-export type IUserSetsInput = IUserSetAttributes;
-export type IUserSetsOutput = IUserSetAttributes;
+export interface IUserSetsInput extends IUserSetAttributes {}
+export interface IUserSetsOutput extends IUserSetAttributes {}
 
 class UserSetModel extends Model<IUserSetAttributes, IUserSetsInput> implements IUserSetAttributes {
-    public id!: number;
+    public id!: string;
     public keycloak_id!: string;
     public content!: any;
     public alias!: string;
@@ -28,7 +27,7 @@ class UserSetModel extends Model<IUserSetAttributes, IUserSetsInput> implements 
 UserSetModel.init(
     {
         id: {
-            type: DataTypes.NUMBER,
+            type: DataTypes.STRING,
             allowNull: false,
             autoIncrement: true,
             primaryKey: true,
