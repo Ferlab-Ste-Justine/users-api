@@ -16,3 +16,5 @@ export const dbPort: number = Number.parseInt(process.env.DATABASE_PORT);
 export const dbName = process.env.DATABASE_NAME;
 export const dbUser = process.env.DATABASE_USER;
 export const dbPassword = process.env.DATABASE_PASSWORD;
+
+export const adminRoleName = process.env.ADMIN_ROLE_NAME || 'admin';

@@ -1,5 +1,8 @@
 import { DataTypes, Model } from 'sequelize';
+
 import sequelizeConnection from '../config';
+
+//todo: change research_area in INCLUDE / INCLUDE keycloak
 
 interface IUserAttributes {
     id: number;
@@ -17,7 +20,8 @@ interface IUserAttributes {
     roles?: string[];
     affiliation?: string;
     portal_usages?: string[];
-    research_area?: string;
+    research_areas?: string[];
+    research_area_description?: string;
     creation_date: Date;
     updated_date: Date;
     consent_date?: Date;
@@ -29,21 +33,23 @@ interface IUserAttributes {
     config?: any;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface IUserInput extends IUserAttributes {}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface IUserOuput extends IUserAttributes {}
 
 class UserModel extends Model<IUserAttributes, IUserInput> implements IUserAttributes {
     public id!: number;
     public keycloak_id!: string;
-    public commercial_use_reason!: string;
-    public accepted_terms!: boolean;
-    public understand_disclaimer!: boolean;
-    public completed_registration!: boolean;
+    public commercial_use_reason: string;
+    public accepted_terms: boolean;
+    public understand_disclaimer: boolean;
+    public completed_registration: boolean;
     public creation_date!: Date;
     public updated_date!: Date;
-    public deleted!: boolean;
-    public roles!: string[];
-    public portal_usages!: string[];
+    public deleted: boolean;
+    public roles: string[];
+    public portal_usages: string[];
 }
 
 UserModel.init(
@@ -75,7 +81,8 @@ UserModel.init(
         public_email: DataTypes.TEXT,
         linkedin: DataTypes.TEXT,
         portal_usages: DataTypes.ARRAY(DataTypes.CITEXT),
-        research_area: DataTypes.TEXT,
+        research_areas: DataTypes.ARRAY(DataTypes.CITEXT),
+        research_area_description: DataTypes.TEXT,
         profile_image_key: DataTypes.TEXT,
         creation_date: {
             type: DataTypes.DATE,

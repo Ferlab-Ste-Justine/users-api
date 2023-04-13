@@ -12,6 +12,7 @@ describe('User Validator', () => {
             accepted_terms: false,
             understand_disclaimer: false,
             completed_registration: false,
+            deleted: false,
         };
 
         it('should validate using Include validator if realm = includedcc', () => {
@@ -69,6 +70,7 @@ describe('User Validator', () => {
                 completed_registration: false,
                 roles: ['role_1'],
                 portal_usages: ['usage_1'],
+                deleted: false,
             };
 
             const userWithEraCommonsId = { ...inputUser, era_commons_id: 'era_commons_id' };
@@ -93,6 +95,7 @@ describe('User Validator', () => {
                 accepted_terms: false,
                 understand_disclaimer: false,
                 completed_registration: false,
+                deleted: false,
             };
 
             const inputUserWithoutId = {
@@ -161,6 +164,7 @@ describe('User Validator', () => {
                 completed_registration: false,
                 roles: ['role_1'],
                 research_areas: ['research_area_1'],
+                deleted: false,
             };
 
             expect(getUserValidator(Realm.CQDG)(validInputUser)).toBeTruthy();
@@ -175,6 +179,7 @@ describe('User Validator', () => {
                 accepted_terms: false,
                 understand_disclaimer: false,
                 completed_registration: false,
+                deleted: false,
             };
 
             const inputUserWithEmptyList = {

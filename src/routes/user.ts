@@ -13,6 +13,8 @@ import {
     updateRolesAndDataUsages,
     updateUser,
 } from '../db/dal/user';
+import { keycloakRealm } from '../env';
+import { getUserValidator } from '../utils/userValidator';
 
 // Handles requests made to /users
 const usersRouter = Router();
@@ -135,7 +137,7 @@ usersRouter.put('/', async (req, res, next) => {
 usersRouter.put('/complete-registration', async (req, res, next) => {
     try {
         const keycloak_id = req['kauth']?.grant?.access_token?.content?.sub;
-        const result = await completeRegistration(keycloak_id, req.body);
+        const result = await completeRegistration(keycloak_id, req.body, getUserValidator(keycloakRealm));
         res.status(StatusCodes.OK).send(result);
     } catch (e) {
         next(e);
@@ -152,6 +154,7 @@ usersRouter.delete('/', async (req, res, next) => {
     }
 });
 
+//todo: delete it after INCLUDE roles and data usages migration SJIP-340
 usersRouter.put('/updateRolesAndDataUsages', async (req, res, next) => {
     try {
         await updateRolesAndDataUsages();

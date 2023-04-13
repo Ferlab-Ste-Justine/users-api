@@ -5,19 +5,25 @@ import { Op, Order } from 'sequelize';
 import { uuid } from 'uuidv4';
 
 import { profileImageBucket } from '../../env';
-import { validateUserRegistrationPayload } from '../../utils/userValidator';
+import { UserValidator } from '../../utils/userValidator';
 import UserModel, { IUserInput, IUserOuput } from '../models/User';
 
-const S3Client = new AWS.S3();
+let S3Client;
+try {
+    S3Client = new AWS.S3();
+} catch (error) {
+    //
+}
 
 const sanitizeInputPayload = (payload: IUserInput) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, keycloak_id, completed_registration, creation_date, ...rest } = payload;
     return rest;
 };
 
+//todo: use congif file for each project
 const otherKey = 'other';
 const profileImageExtension = 'jpeg';
-
 const cleanedUserAttributes = [
     'id',
     'keycloak_id',
@@ -129,6 +135,13 @@ export const searchUsers = async ({
 };
 
 export const getProfileImageUploadPresignedUrl = async (keycloak_id: string) => {
+    if (!S3Client) {
+        return {
+            s3Key: undefined,
+            presignUrl: undefined,
+        };
+    }
+
     const s3Key = `${keycloak_id}.${profileImageExtension}`;
     const presignUrl = S3Client.getSignedUrl('putObject', {
         Bucket: profileImageBucket,
@@ -234,8 +247,12 @@ export const deleteUser = async (keycloak_id: string): Promise<void> => {
     );
 };
 
-export const completeRegistration = async (keycloak_id: string, payload: IUserInput): Promise<IUserOuput> => {
-    if (!validateUserRegistrationPayload(payload)) {
+export const completeRegistration = async (
+    keycloak_id: string,
+    payload: IUserInput,
+    validator: UserValidator,
+): Promise<IUserOuput> => {
+    if (!validator(payload)) {
         throw createHttpError(
             StatusCodes.BAD_REQUEST,
             'Some required fields are missing to complete user registration',
@@ -262,7 +279,7 @@ export const completeRegistration = async (keycloak_id: string, payload: IUserIn
 export const updateRolesAndDataUsages = async (): Promise<void> => {
     const results = await UserModel.findAll();
 
-    results.forEach(async (user) => {
+    results.map(async (user) => {
         await UserModel.update(
             {
                 ...user,
