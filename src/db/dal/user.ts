@@ -1,4 +1,4 @@
-import AWS from 'aws-sdk';
+import { S3 } from '@aws-sdk/client-s3';
 import createHttpError from 'http-errors';
 import { StatusCodes } from 'http-status-codes';
 import { Op, Order } from 'sequelize';
@@ -10,7 +10,7 @@ import UserModel, { IUserInput, IUserOuput } from '../models/User';
 
 let S3Client;
 try {
-    S3Client = new AWS.S3();
+    S3Client = new S3({});
 } catch (error) {
     //
 }
