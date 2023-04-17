@@ -1,5 +1,6 @@
 import { Sequelize } from 'sequelize';
-import { dbHost, dbName, dbPassword, dbPort, dbUser } from '../env';
+
+import { dbHost, dbName, dbPassword, dbPort, dbUser } from '../config/env';
 
 const sequelizeConnection = new Sequelize(dbName, dbUser, dbPassword, {
     port: dbPort,

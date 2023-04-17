@@ -4,7 +4,8 @@ import { StatusCodes } from 'http-status-codes';
 import { Op, Order } from 'sequelize';
 import { uuid } from 'uuidv4';
 
-import { profileImageBucket } from '../../env';
+import { profileImageBucket } from '../../config/env';
+import config from '../../config/project';
 import { UserValidator } from '../../utils/userValidator';
 import UserModel, { IUserInput, IUserOuput } from '../models/User';
 
@@ -12,7 +13,7 @@ let S3Client;
 try {
     S3Client = new S3({});
 } catch (error) {
-    //
+    console.warn('S3 client not initialized');
 }
 
 const sanitizeInputPayload = (payload: IUserInput) => {
@@ -20,25 +21,6 @@ const sanitizeInputPayload = (payload: IUserInput) => {
     const { id, keycloak_id, completed_registration, creation_date, ...rest } = payload;
     return rest;
 };
-
-//todo: use congif file for each project
-const otherKey = 'other';
-const profileImageExtension = 'jpeg';
-const cleanedUserAttributes = [
-    'id',
-    'keycloak_id',
-    'first_name',
-    'last_name',
-    'roles',
-    'portal_usages',
-    'creation_date',
-    'updated_date',
-    'public_email',
-    'commercial_use_reason',
-    'linkedin',
-    'affiliation',
-    'profile_image_key',
-];
 
 export const searchUsers = async ({
     pageSize,
@@ -75,7 +57,7 @@ export const searchUsers = async ({
     }
 
     const andClauses = [];
-    const rolesWithoutOther = roles.filter((role) => role.toLowerCase() !== otherKey);
+    const rolesWithoutOther = roles.filter((role) => role.toLowerCase() !== config.otherKey);
     if (rolesWithoutOther.length) {
         andClauses.push({
             roles: {
@@ -84,7 +66,7 @@ export const searchUsers = async ({
         });
     }
 
-    const dataUsesWithoutOther = dataUses.filter((use) => use.toLowerCase() !== otherKey);
+    const dataUsesWithoutOther = dataUses.filter((use) => use.toLowerCase() !== config.otherKey);
     if (dataUsesWithoutOther.length) {
         andClauses.push({
             portal_usages: {
@@ -93,7 +75,7 @@ export const searchUsers = async ({
         });
     }
 
-    if (dataUses.includes(otherKey)) {
+    if (dataUses.includes(config.otherKey)) {
         andClauses.push({
             [Op.not]: {
                 portal_usages: {
@@ -103,7 +85,7 @@ export const searchUsers = async ({
         });
     }
 
-    if (roles.includes(otherKey)) {
+    if (roles.includes(config.otherKey)) {
         andClauses.push({
             [Op.not]: {
                 roles: {
@@ -114,7 +96,7 @@ export const searchUsers = async ({
     }
 
     const results = await UserModel.findAndCountAll({
-        attributes: cleanedUserAttributes,
+        attributes: config.cleanedUserAttributes,
         limit: pageSize,
         offset: pageIndex * pageSize,
         order: sorts,
@@ -142,7 +124,7 @@ export const getProfileImageUploadPresignedUrl = async (keycloak_id: string) => 
         };
     }
 
-    const s3Key = `${keycloak_id}.${profileImageExtension}`;
+    const s3Key = `${keycloak_id}.${config.profileImageExtension}`;
     const presignUrl = S3Client.getSignedUrl('putObject', {
         Bucket: profileImageBucket,
         Key: s3Key,
@@ -161,7 +143,7 @@ export const getUserById = async (keycloak_id: string, isOwn: boolean): Promise<
     let attributesClause = {};
     if (!isOwn) {
         attributesClause = {
-            attributes: cleanedUserAttributes,
+            attributes: config.cleanedUserAttributes,
         };
     }
 

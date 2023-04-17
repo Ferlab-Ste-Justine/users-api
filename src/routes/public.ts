@@ -1,9 +1,10 @@
 import { Router } from 'express';
-import { isUserExists } from '../db/dal/user';
-import { StatusCodes } from 'http-status-codes';
 import createHttpError from 'http-errors';
-import { keycloakURL } from '../env';
+import { StatusCodes } from 'http-status-codes';
+
 import { version } from '../../package.json';
+import { keycloakURL } from '../config/env';
+import { isUserExists } from '../db/dal/user';
 
 // Handles public endpoint requests
 const publicRouter = Router();

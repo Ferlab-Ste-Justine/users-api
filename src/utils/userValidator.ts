@@ -1,5 +1,5 @@
+import Realm from '../config/realm';
 import { IUserInput } from '../db/models/User';
-import Realm from './realm';
 
 export interface UserValidator {
     (payload: IUserInput): boolean;

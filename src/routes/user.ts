@@ -3,6 +3,7 @@ import createHttpError from 'http-errors';
 import { StatusCodes } from 'http-status-codes';
 import { Order } from 'sequelize';
 
+import { keycloakRealm } from '../config/env';
 import {
     completeRegistration,
     createUser,
@@ -13,7 +14,6 @@ import {
     updateRolesAndDataUsages,
     updateUser,
 } from '../db/dal/user';
-import { keycloakRealm } from '../env';
 import { getUserValidator } from '../utils/userValidator';
 
 // Handles requests made to /users
