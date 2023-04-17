@@ -19,6 +19,17 @@ import { getUserValidator } from '../utils/userValidator';
 // Handles requests made to /users
 const usersRouter = Router();
 
+interface CustomReqQuery {
+    pageSize?: string;
+    pageIndex?: string;
+    sort?: string;
+    match?: string;
+    roles?: string;
+    dataUses?: string;
+    roleOptions?: string;
+    usageOptions?: string;
+}
+
 /**
  *
  * Example search query params:
@@ -30,64 +41,43 @@ const usersRouter = Router();
  * dataUses     = Commercial use,other
  *
  */
-usersRouter.get(
-    '/search',
-    async (
-        req: Request<
-            {},
-            {},
-            {},
-            {
-                pageSize?: string;
-                pageIndex?: string;
-                sort?: string;
-                match?: string;
-                roles?: string;
-                dataUses?: string;
-                roleOptions?: string;
-                usageOptions?: string;
-            }
-        >,
-        res,
-        next,
-    ) => {
-        try {
-            const pageSize = parseInt(req.query.pageSize || '15');
-            const pageIndex = parseInt(req.query.pageIndex || '0');
-            const roles = req.query.roles ? req.query.roles.split(',') : [];
-            const dataUses = req.query.dataUses ? req.query.dataUses.split(',') : [];
+usersRouter.get('/search', async (req: Request<any, any, any, CustomReqQuery>, res, next) => {
+    try {
+        const pageSize = parseInt(req.query.pageSize || '15');
+        const pageIndex = parseInt(req.query.pageIndex || '0');
+        const roles = req.query.roles ? req.query.roles.split(',') : [];
+        const dataUses = req.query.dataUses ? req.query.dataUses.split(',') : [];
 
-            let sorts: Order = [];
-            if (req.query.sort) {
-                sorts = req.query.sort.split(',').map((sortElement) => {
-                    const sortItems = sortElement.split(':');
-                    return [sortItems[0], sortItems[1].toUpperCase()];
-                });
-            }
-
-            const roleOptions = req.query.roleOptions ? req.query.roleOptions.split(',') : [];
-            const usageOptions = req.query.usageOptions ? req.query.usageOptions.split(',') : [];
-
-            if (!roleOptions.length || !roleOptions.length) {
-                throw createHttpError(StatusCodes.BAD_REQUEST, 'roleOptions and usageOptions array must be provided.');
-            }
-
-            const result = await searchUsers({
-                pageSize,
-                pageIndex,
-                sorts,
-                match: req.query.match,
-                roles,
-                dataUses,
-                roleOptions,
-                usageOptions,
+        let sorts: Order = [];
+        if (req.query.sort) {
+            sorts = req.query.sort.split(',').map((sortElement) => {
+                const sortItems = sortElement.split(':');
+                return [sortItems[0], sortItems[1].toUpperCase()];
             });
-            res.status(StatusCodes.OK).send(result);
-        } catch (e) {
-            next(e);
         }
-    },
-);
+
+        const roleOptions = req.query.roleOptions ? req.query.roleOptions.split(',') : [];
+        const usageOptions = req.query.usageOptions ? req.query.usageOptions.split(',') : [];
+
+        if (!roleOptions.length || !roleOptions.length) {
+            throw createHttpError(StatusCodes.BAD_REQUEST, 'roleOptions and usageOptions array must be provided.');
+        }
+
+        const result = await searchUsers({
+            pageSize,
+            pageIndex,
+            sorts,
+            match: req.query.match,
+            roles,
+            dataUses,
+            roleOptions,
+            usageOptions,
+        });
+        res.status(StatusCodes.OK).send(result);
+    } catch (e) {
+        next(e);
+    }
+});
 
 usersRouter.get('/image/presigned', async (req, res, next) => {
     try {

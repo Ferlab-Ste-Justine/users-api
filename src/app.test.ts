@@ -76,7 +76,7 @@ describe('Express app', () => {
                 updated_date: new Date(),
                 consent_date: new Date(),
                 accepted_terms: true,
-                deleted: false
+                deleted: false,
             };
 
             (getUserById as jest.Mock).mockImplementation(() => expectedUser);
@@ -150,7 +150,7 @@ describe('Express app', () => {
                 updated_date: new Date(),
                 consent_date: postUserBody.consent_date,
                 accepted_terms: postUserBody.accepted_terms,
-                deleted: false
+                deleted: false,
             };
 
             (createUser as jest.Mock).mockImplementation(() => expectedUser);
@@ -232,7 +232,7 @@ describe('Express app', () => {
                 updated_date: new Date(),
                 consent_date: putUserBody.consent_date,
                 accepted_terms: putUserBody.accepted_terms,
-                deleted: false
+                deleted: false,
             };
 
             (updateUser as jest.Mock).mockImplementation(() => expectedUser);

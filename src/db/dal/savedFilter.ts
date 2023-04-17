@@ -4,8 +4,8 @@ import { Op } from 'sequelize';
 
 import SavedFilterModel, { ISavedFilterInput, ISavedFilterOutput } from '../models/SavedFilter';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const sanitizeInputPayload = (payload: ISavedFilterInput) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, keycloak_id, creation_date, ...rest } = payload;
     return rest;
 };
