@@ -4,12 +4,11 @@ import { Op } from 'sequelize';
 
 import SavedFilterModel, { ISavedFilterInput, ISavedFilterOutput } from '../models/SavedFilter';
 
-const sanitizeInputPayload = (payload: ISavedFilterInput) => ({
-    ...payload,
-    id: undefined,
-    keycloak_id: undefined,
-    creation_date: undefined,
-});
+const sanitizeInputPayload = (payload: ISavedFilterInput) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, keycloak_id, creation_date, ...rest } = payload;
+    return rest;
+};
 
 export const getById = async (id: string): Promise<ISavedFilterOutput> => {
     const filter = await SavedFilterModel.findOne({

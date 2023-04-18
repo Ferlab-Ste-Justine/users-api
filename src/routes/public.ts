@@ -3,8 +3,8 @@ import createHttpError from 'http-errors';
 import { StatusCodes } from 'http-status-codes';
 
 import { version } from '../../package.json';
+import { keycloakURL } from '../config/env';
 import { isUserExists } from '../db/dal/user';
-import { keycloakURL } from '../env';
 
 // Handles public endpoint requests
 const publicRouter = Router();

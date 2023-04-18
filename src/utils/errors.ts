@@ -22,7 +22,7 @@ export const globalErrorHandler = (err: unknown, _req: Request, res: Response, _
 };
 
 export const globalErrorLogger = (err: unknown, _req: Request, _res: Response, next: NextFunction): void => {
-    // eslint-disable-next-line
+    // eslint-disable-next-line no-console
     console.log(err);
     next(err);
 };

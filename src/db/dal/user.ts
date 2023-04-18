@@ -1,24 +1,112 @@
+import { S3 } from '@aws-sdk/client-s3';
 import createHttpError from 'http-errors';
 import { StatusCodes } from 'http-status-codes';
+import { Op, Order } from 'sequelize';
+import { uuid } from 'uuidv4';
 
+import { profileImageBucket } from '../../config/env';
+import config from '../../config/project';
 import { UserValidator } from '../../utils/userValidator';
 import UserModel, { IUserInput, IUserOuput } from '../models/User';
 
-const sanitizeInputPayload = (payload: IUserInput) => ({
-    ...payload,
-    id: undefined,
-    keycloak_id: undefined,
-    completed_registration: undefined,
-    creation_date: undefined,
-});
+let S3Client;
+try {
+    S3Client = new S3({});
+} catch (error) {
+    console.warn('S3 client not initialized');
+}
 
-export const searchUsers = async (pageSize: number, pageIndex: number) => {
+const sanitizeInputPayload = (payload: IUserInput) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, keycloak_id, completed_registration, creation_date, ...rest } = payload;
+    return rest;
+};
+
+export const searchUsers = async ({
+    pageSize,
+    pageIndex,
+    sorts,
+    match,
+    roles,
+    dataUses,
+    roleOptions,
+    usageOptions,
+}: {
+    pageSize: number;
+    pageIndex: number;
+    sorts: Order;
+    match: string;
+    roles: string[];
+    dataUses: string[];
+    roleOptions: string[];
+    usageOptions: string[];
+}) => {
+    let matchClauses = {};
+    if (match) {
+        const matchLikeClause = {
+            [Op.iLike]: `%${match}%`,
+        };
+
+        matchClauses = {
+            [Op.or]: [
+                { first_name: matchLikeClause },
+                { last_name: matchLikeClause },
+                { affiliation: matchLikeClause },
+            ],
+        };
+    }
+
+    const andClauses = [];
+    const rolesWithoutOther = roles.filter((role) => role.toLowerCase() !== config.otherKey);
+    if (rolesWithoutOther.length) {
+        andClauses.push({
+            roles: {
+                [Op.contains]: rolesWithoutOther.map((role) => role.toLowerCase()),
+            },
+        });
+    }
+
+    const dataUsesWithoutOther = dataUses.filter((use) => use.toLowerCase() !== config.otherKey);
+    if (dataUsesWithoutOther.length) {
+        andClauses.push({
+            portal_usages: {
+                [Op.contains]: dataUsesWithoutOther.map((use) => use.toLowerCase()),
+            },
+        });
+    }
+
+    if (dataUses.includes(config.otherKey)) {
+        andClauses.push({
+            [Op.not]: {
+                portal_usages: {
+                    [Op.contained]: usageOptions,
+                },
+            },
+        });
+    }
+
+    if (roles.includes(config.otherKey)) {
+        andClauses.push({
+            [Op.not]: {
+                roles: {
+                    [Op.contained]: roleOptions,
+                },
+            },
+        });
+    }
+
     const results = await UserModel.findAndCountAll({
+        attributes: config.cleanedUserAttributes,
         limit: pageSize,
         offset: pageIndex * pageSize,
-        order: [['updated_date', 'DESC']],
+        order: sorts,
         where: {
-            completed_registration: true,
+            [Op.and]: {
+                completed_registration: true,
+                deleted: false,
+                ...matchClauses,
+                [Op.and]: andClauses,
+            },
         },
     });
 
@@ -28,10 +116,42 @@ export const searchUsers = async (pageSize: number, pageIndex: number) => {
     };
 };
 
-export const getUserById = async (keycloak_id: string): Promise<IUserOuput> => {
+export const getProfileImageUploadPresignedUrl = async (keycloak_id: string) => {
+    if (!S3Client) {
+        return {
+            s3Key: undefined,
+            presignUrl: undefined,
+        };
+    }
+
+    const s3Key = `${keycloak_id}.${config.profileImageExtension}`;
+    const presignUrl = S3Client.getSignedUrl('putObject', {
+        Bucket: profileImageBucket,
+        Key: s3Key,
+        Expires: 60 * 5,
+        ContentType: 'image/jpeg',
+        ACL: 'public-read',
+    });
+
+    return {
+        s3Key,
+        presignUrl,
+    };
+};
+
+export const getUserById = async (keycloak_id: string, isOwn: boolean): Promise<IUserOuput> => {
+    let attributesClause = {};
+    if (!isOwn) {
+        attributesClause = {
+            attributes: config.cleanedUserAttributes,
+        };
+    }
+
     const user = await UserModel.findOne({
+        ...attributesClause,
         where: {
             keycloak_id,
+            deleted: false,
         },
     });
 
@@ -85,6 +205,30 @@ export const updateUser = async (keycloak_id: string, payload: IUserInput): Prom
     return results[1][0];
 };
 
+export const deleteUser = async (keycloak_id: string): Promise<void> => {
+    await UserModel.update(
+        {
+            keycloak_id: uuid(),
+            email: uuid(),
+            affiliation: uuid(),
+            public_email: uuid(),
+            nih_ned_id: uuid(),
+            era_commons_id: uuid(),
+            first_name: uuid(),
+            last_name: uuid(),
+            linkedin: uuid(),
+            external_individual_fullname: uuid(),
+            external_individual_email: uuid(),
+            deleted: true,
+        },
+        {
+            where: {
+                keycloak_id,
+            },
+        },
+    );
+};
+
 export const completeRegistration = async (
     keycloak_id: string,
     payload: IUserInput,
@@ -114,9 +258,60 @@ export const completeRegistration = async (
     return results[1][0];
 };
 
-export const deleteUser = async (keycloak_id: string): Promise<boolean> => {
-    const deletedCount = await UserModel.destroy({
-        where: { keycloak_id },
+export const updateRolesAndDataUsages = async (): Promise<void> => {
+    const results = await UserModel.findAll();
+
+    results.map(async (user) => {
+        await UserModel.update(
+            {
+                ...user,
+                updated_date: new Date(),
+                roles: replaceRoles(user.roles || []),
+                portal_usages: replacePortalUsages(user.portal_usages || []),
+            },
+            {
+                where: {
+                    keycloak_id: user.keycloak_id,
+                },
+                returning: true,
+            },
+        );
     });
-    return !!deletedCount;
 };
+
+const replaceRoles = (roles: string[]): string[] =>
+    roles.map((role) => {
+        switch (role.toLocaleLowerCase()) {
+            case 'researcher at an academic or not-for-profit institution':
+                return 'researcher';
+            case 'representative from a for-profit or commercial entity':
+                return 'representative';
+            case 'tool or algorithm developer':
+                return 'developer';
+            case 'community member':
+                return 'community_member';
+            case 'federal employee':
+                return 'federal_employee';
+            default:
+                return role;
+        }
+    });
+
+const replacePortalUsages = (usages: string[]): string[] =>
+    usages.map((usage) => {
+        switch (usage.toLocaleLowerCase()) {
+            case 'learning more about down syndrome and its health outcomes, management, and/or treatment':
+            case 'learn more about down syndrome and its health outcomes, management, and/or treatment':
+                return 'learn_more_about_down_syndrome';
+            case 'helping me design a new research study':
+            case 'help me design a new research study':
+                return 'help_design_new_research_study';
+            case 'identifying datasets that i want to analyze':
+            case 'identify datasets that i want to analyze':
+                return 'identifying_dataset';
+            case 'commercial purposes':
+                return 'commercial_purpose';
+            default:
+                return usage;
+        }
+    });

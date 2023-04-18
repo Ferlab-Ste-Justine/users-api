@@ -4,12 +4,11 @@ import { Op } from 'sequelize';
 
 import UserSetModel, { IUserSetsInput, IUserSetsOutput } from '../models/UserSets';
 
-const sanitizeInputPayload = (payload: IUserSetsInput) => ({
-    ...payload,
-    id: undefined,
-    keycloak_id: undefined,
-    creation_date: undefined,
-});
+const sanitizeInputPayload = (payload: IUserSetsInput) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, keycloak_id, creation_date, ...rest } = payload;
+    return rest;
+};
 
 export const getById = async (keycloak_id: string, id: string): Promise<IUserSetsOutput> => {
     const filter = await UserSetModel.findOne({
@@ -26,12 +25,12 @@ export const getById = async (keycloak_id: string, id: string): Promise<IUserSet
 };
 
 export const getAll = async (keycloak_id: string): Promise<IUserSetsOutput[]> =>
-    await UserSetModel.findAll({
+    UserSetModel.findAll({
         where: { keycloak_id },
     });
 
 export const create = async (keycloak_id: string, payload: IUserSetsInput): Promise<IUserSetsOutput> =>
-    await UserSetModel.create({
+    UserSetModel.create({
         ...payload,
         keycloak_id,
         creation_date: new Date(),
