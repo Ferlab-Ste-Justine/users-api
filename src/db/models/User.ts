@@ -2,8 +2,6 @@ import { DataTypes, Model } from 'sequelize';
 
 import sequelizeConnection from '../config';
 
-//todo: change research_area in INCLUDE / INCLUDE keycloak
-
 interface IUserAttributes {
     id: number;
     keycloak_id: string;
@@ -20,7 +18,7 @@ interface IUserAttributes {
     roles?: string[];
     affiliation?: string;
     portal_usages?: string[];
-    research_areas?: string[];
+    research_domains?: string[];
     research_area_description?: string;
     creation_date: Date;
     updated_date: Date;
@@ -81,7 +79,7 @@ UserModel.init(
         public_email: DataTypes.TEXT,
         linkedin: DataTypes.TEXT,
         portal_usages: DataTypes.ARRAY(DataTypes.CITEXT),
-        research_areas: DataTypes.ARRAY(DataTypes.CITEXT),
+        research_domains: DataTypes.ARRAY(DataTypes.CITEXT),
         research_area_description: DataTypes.TEXT,
         profile_image_key: DataTypes.TEXT,
         creation_date: {

@@ -28,7 +28,7 @@ describe('User Validator', () => {
             const invalidIncludeInputUser = {
                 ...inputUser,
                 roles: ['role_1'],
-                research_areas: ['research_area_1'],
+                research_domains: ['research_area_1'],
             };
 
             expect(getUserValidator(Realm.INCLUDE)(invalidIncludeInputUser)).toBeFalsy();
@@ -38,7 +38,7 @@ describe('User Validator', () => {
             const validCqdgInputUser = {
                 ...inputUser,
                 roles: ['role_1'],
-                research_areas: ['research_area_1'],
+                research_domains: ['research_area_1'],
             };
 
             expect(getUserValidator(Realm.CQDG)(validCqdgInputUser)).toBeTruthy();
@@ -153,7 +153,7 @@ describe('User Validator', () => {
     });
 
     describe('cqdgUserValidator', () => {
-        it('should return true if roles and research_areas are not empty', () => {
+        it('should return true if roles and research_domains are not empty', () => {
             const validInputUser: IUserInput = {
                 id: 123,
                 keycloak_id: 'keycloak_id',
@@ -163,7 +163,7 @@ describe('User Validator', () => {
                 understand_disclaimer: false,
                 completed_registration: false,
                 roles: ['role_1'],
-                research_areas: ['research_area_1'],
+                research_domains: ['research_area_1'],
                 deleted: false,
             };
 
@@ -185,25 +185,25 @@ describe('User Validator', () => {
             const inputUserWithEmptyList = {
                 ...inputUser,
                 roles: [],
-                research_areas: [],
+                research_domains: [],
             };
 
             const inputUserWithNull = {
                 ...inputUser,
                 roles: null,
-                research_areas: null,
+                research_domains: null,
             };
 
             const inputUserWithOnlyRoles = {
                 ...inputUser,
                 roles: ['role_1'],
-                research_areas: [],
+                research_domains: [],
             };
 
             const inputUserWithOnlyResearchAreas = {
                 ...inputUser,
                 roles: [],
-                research_areas: ['research_area_1'],
+                research_domains: ['research_domains_1'],
             };
 
             expect(getUserValidator(Realm.CQDG)(inputUser)).toBeFalsy(); // both are undefined
