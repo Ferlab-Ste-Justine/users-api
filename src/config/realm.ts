@@ -1,8 +1,8 @@
 enum Realm {
     INCLUDE = 'includedcc',
     CQDG = 'CQDG',
-    KF = 'KF',
-    CLIN = 'CLIN',
+    KF = 'kidsfirstdrc',
+    CLIN = 'clin',
 }
 
 export default Realm;

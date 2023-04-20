@@ -28,7 +28,7 @@ describe('User Validator', () => {
             const invalidIncludeInputUser = {
                 ...inputUser,
                 roles: ['role_1'],
-                research_domains: ['research_area_1'],
+                research_domains: ['research_domains_1'],
             };
 
             expect(getUserValidator(Realm.INCLUDE)(invalidIncludeInputUser)).toBeFalsy();
@@ -38,7 +38,7 @@ describe('User Validator', () => {
             const validCqdgInputUser = {
                 ...inputUser,
                 roles: ['role_1'],
-                research_domains: ['research_area_1'],
+                research_domains: ['research_domains_1'],
             };
 
             expect(getUserValidator(Realm.CQDG)(validCqdgInputUser)).toBeTruthy();
@@ -163,7 +163,7 @@ describe('User Validator', () => {
                 understand_disclaimer: false,
                 completed_registration: false,
                 roles: ['role_1'],
-                research_domains: ['research_area_1'],
+                research_domains: ['research_domains_1'],
                 deleted: false,
             };
 
@@ -200,7 +200,7 @@ describe('User Validator', () => {
                 research_domains: [],
             };
 
-            const inputUserWithOnlyResearchAreas = {
+            const inputUserWithOnlyResearchDomains = {
                 ...inputUser,
                 roles: [],
                 research_domains: ['research_domains_1'],
@@ -210,7 +210,7 @@ describe('User Validator', () => {
             expect(getUserValidator(Realm.CQDG)(inputUserWithEmptyList)).toBeFalsy();
             expect(getUserValidator(Realm.CQDG)(inputUserWithNull)).toBeFalsy();
             expect(getUserValidator(Realm.CQDG)(inputUserWithOnlyRoles)).toBeFalsy();
-            expect(getUserValidator(Realm.CQDG)(inputUserWithOnlyResearchAreas)).toBeFalsy();
+            expect(getUserValidator(Realm.CQDG)(inputUserWithOnlyResearchDomains)).toBeFalsy();
         });
     });
 });
