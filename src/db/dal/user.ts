@@ -22,6 +22,40 @@ const sanitizeInputPayload = (payload: IUserInput) => {
     return rest;
 };
 
+const createMatchClauses = (match: string) => {
+    if (!match) return {};
+    const matchLikeClause = { [Op.iLike]: `%${match}%` };
+    return {
+        [Op.or]: [{ first_name: matchLikeClause }, { last_name: matchLikeClause }, { affiliation: matchLikeClause }],
+    };
+};
+
+const createAndClauses = (
+    filters: {
+        filterName: string;
+        filterArray: string[];
+        filterOptions: string[];
+    }[],
+) => {
+    const andClauses = [];
+    for (const filter of filters) {
+        const filterWithoutOther = filter.filterArray.filter((item) => item.toLowerCase() !== config.otherKey);
+        if (filterWithoutOther.length) {
+            andClauses.push({
+                [filter.filterName]: {
+                    [Op.contains]: filterWithoutOther.filter((item) => item).map((item) => item.toLowerCase()),
+                },
+            });
+        }
+        if (filter.filterArray.includes(config.otherKey)) {
+            andClauses.push({
+                [Op.not]: { [filter.filterName]: { [Op.contained]: filter.filterOptions } },
+            });
+        }
+    }
+    return andClauses;
+};
+
 export const searchUsers = async ({
     pageSize,
     pageIndex,
@@ -29,8 +63,10 @@ export const searchUsers = async ({
     match,
     roles,
     dataUses,
+    researchDomains,
     roleOptions,
     usageOptions,
+    researchDomainsOptions,
 }: {
     pageSize: number;
     pageIndex: number;
@@ -38,62 +74,18 @@ export const searchUsers = async ({
     match: string;
     roles: string[];
     dataUses: string[];
+    researchDomains: string[];
     roleOptions: string[];
     usageOptions: string[];
+    researchDomainsOptions: string[];
 }) => {
-    let matchClauses = {};
-    if (match) {
-        const matchLikeClause = {
-            [Op.iLike]: `%${match}%`,
-        };
-
-        matchClauses = {
-            [Op.or]: [
-                { first_name: matchLikeClause },
-                { last_name: matchLikeClause },
-                { affiliation: matchLikeClause },
-            ],
-        };
-    }
-
-    const andClauses = [];
-    const rolesWithoutOther = roles.filter((role) => role.toLowerCase() !== config.otherKey);
-    if (rolesWithoutOther.length) {
-        andClauses.push({
-            roles: {
-                [Op.contains]: rolesWithoutOther.map((role) => role.toLowerCase()),
-            },
-        });
-    }
-
-    const dataUsesWithoutOther = dataUses.filter((use) => use.toLowerCase() !== config.otherKey);
-    if (dataUsesWithoutOther.length) {
-        andClauses.push({
-            portal_usages: {
-                [Op.contains]: dataUsesWithoutOther.map((use) => use.toLowerCase()),
-            },
-        });
-    }
-
-    if (dataUses.includes(config.otherKey)) {
-        andClauses.push({
-            [Op.not]: {
-                portal_usages: {
-                    [Op.contained]: usageOptions,
-                },
-            },
-        });
-    }
-
-    if (roles.includes(config.otherKey)) {
-        andClauses.push({
-            [Op.not]: {
-                roles: {
-                    [Op.contained]: roleOptions,
-                },
-            },
-        });
-    }
+    const matchClauses = createMatchClauses(match);
+    const filters = [
+        { filterArray: roles, filterName: 'roles', filterOptions: roleOptions },
+        { filterArray: dataUses, filterName: 'portal_usages', filterOptions: usageOptions },
+        { filterArray: researchDomains, filterName: 'research_domains', filterOptions: researchDomainsOptions },
+    ];
+    const andClauses = createAndClauses(filters);
 
     const results = await UserModel.findAndCountAll({
         attributes: config.cleanedUserAttributes,

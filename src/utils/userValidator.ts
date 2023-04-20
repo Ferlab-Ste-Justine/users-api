@@ -5,17 +5,15 @@ export interface UserValidator {
     (payload: IUserInput): boolean;
 }
 
-const includeUserValidator = (payload: IUserInput) =>
+const includeUserValidator = (payload: IUserInput): boolean =>
     (payload.era_commons_id ||
         payload.nih_ned_id ||
         (payload.external_individual_fullname && payload.external_individual_email)) &&
-    payload.roles &&
-    payload.roles.length > 0 &&
-    payload.portal_usages &&
-    payload.portal_usages.length > 0;
+    payload.roles?.length &&
+    payload.portal_usages?.length > 0;
 
-const cqdgUserValidator = (payload: IUserInput) =>
-    payload.roles && payload.roles.length > 0 && payload.research_areas && payload.research_areas.length > 0;
+const cqdgUserValidator = (payload: IUserInput): boolean =>
+    payload.roles?.length && payload.research_domains?.length > 0;
 
 const defaultUserValidator = (_payload: IUserInput) => true; // no additionnal validation
 

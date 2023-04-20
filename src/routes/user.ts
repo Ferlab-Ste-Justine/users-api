@@ -26,8 +26,10 @@ interface CustomReqQuery {
     match?: string;
     roles?: string;
     dataUses?: string;
+    researchDomains?: string;
     roleOptions?: string;
     usageOptions?: string;
+    researchDomainsOptions?: string;
 }
 
 /**
@@ -47,6 +49,7 @@ usersRouter.get('/search', async (req: Request<any, any, any, CustomReqQuery>, r
         const pageIndex = parseInt(req.query.pageIndex || '0');
         const roles = req.query.roles ? req.query.roles.split(',') : [];
         const dataUses = req.query.dataUses ? req.query.dataUses.split(',') : [];
+        const researchDomains = req.query.researchDomains?.split(',') || [];
 
         let sorts: Order = [];
         if (req.query.sort) {
@@ -58,6 +61,7 @@ usersRouter.get('/search', async (req: Request<any, any, any, CustomReqQuery>, r
 
         const roleOptions = req.query.roleOptions ? req.query.roleOptions.split(',') : [];
         const usageOptions = req.query.usageOptions ? req.query.usageOptions.split(',') : [];
+        const researchDomainsOptions = req.query.researchDomainsOptions?.split(',') || [];
 
         if (!roleOptions.length || !roleOptions.length) {
             throw createHttpError(StatusCodes.BAD_REQUEST, 'roleOptions and usageOptions array must be provided.');
@@ -70,8 +74,10 @@ usersRouter.get('/search', async (req: Request<any, any, any, CustomReqQuery>, r
             match: req.query.match,
             roles,
             dataUses,
+            researchDomains,
             roleOptions,
             usageOptions,
+            researchDomainsOptions,
         });
         res.status(StatusCodes.OK).send(result);
     } catch (e) {

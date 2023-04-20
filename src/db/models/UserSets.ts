@@ -17,7 +17,6 @@ export interface IUserSetsInput extends IUserSetAttributes {}
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface IUserSetsOutput extends IUserSetAttributes {}
 
-//todo: check if string id (old number) is ok for CLIN / KF (looks good for cqdg/include)
 class UserSetModel extends Model<IUserSetAttributes, IUserSetsInput> implements IUserSetAttributes {
     public id!: string;
     public keycloak_id!: string;
