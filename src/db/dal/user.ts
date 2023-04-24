@@ -5,6 +5,7 @@ import { Op, Order } from 'sequelize';
 import { uuid } from 'uuidv4';
 
 import { profileImageBucket } from '../../config/env';
+import { researchDomainOptions, roleOptions, usageOptions } from '../../config/options';
 import config from '../../config/project';
 import { UserValidator } from '../../utils/userValidator';
 import UserModel, { IUserInput, IUserOuput } from '../models/User';
@@ -64,9 +65,6 @@ export const searchUsers = async ({
     roles,
     dataUses,
     researchDomains,
-    roleOptions,
-    usageOptions,
-    researchDomainsOptions,
 }: {
     pageSize: number;
     pageIndex: number;
@@ -75,15 +73,20 @@ export const searchUsers = async ({
     roles: string[];
     dataUses: string[];
     researchDomains: string[];
-    roleOptions: string[];
-    usageOptions: string[];
-    researchDomainsOptions: string[];
 }) => {
     const matchClauses = createMatchClauses(match);
     const filters = [
-        { filterArray: roles, filterName: 'roles', filterOptions: roleOptions },
-        { filterArray: dataUses, filterName: 'portal_usages', filterOptions: usageOptions },
-        { filterArray: researchDomains, filterName: 'research_domains', filterOptions: researchDomainsOptions },
+        { filterArray: roles, filterName: 'roles', filterOptions: roleOptions.map((option) => option.value) },
+        {
+            filterArray: dataUses,
+            filterName: 'portal_usages',
+            filterOptions: usageOptions.map((option) => option.value),
+        },
+        {
+            filterArray: researchDomains,
+            filterName: 'research_domains',
+            filterOptions: researchDomainOptions.map((option) => option.value),
+        },
     ];
     const andClauses = createAndClauses(filters);
 

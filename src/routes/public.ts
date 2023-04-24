@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { version } from '../../package.json';
 import { keycloakURL } from '../config/env';
+import { researchDomainOptions, roleOptions, usageOptions } from '../config/options';
 import { isUserExists } from '../db/dal/user';
 
 // Handles public endpoint requests
@@ -26,6 +27,19 @@ publicRouter.get('/user/exists', async (req, res, next) => {
 
         const result = await isUserExists(keycloak_id as string);
         res.status(StatusCodes.OK).send(result);
+    } catch (e) {
+        next(e);
+    }
+});
+
+publicRouter.get('/userOptions', async (req, res, next) => {
+    try {
+        const options = {
+            researchDomainOptions,
+            roleOptions,
+            usageOptions,
+        };
+        res.status(StatusCodes.OK).send(options);
     } catch (e) {
         next(e);
     }
