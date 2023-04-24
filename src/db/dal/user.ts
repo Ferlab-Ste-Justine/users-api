@@ -5,7 +5,6 @@ import { Op, Order } from 'sequelize';
 import { uuid } from 'uuidv4';
 
 import { profileImageBucket } from '../../config/env';
-import { researchDomainOptions, roleOptions, usageOptions } from '../../config/options';
 import config from '../../config/project';
 import { UserValidator } from '../../utils/userValidator';
 import UserModel, { IUserInput, IUserOuput } from '../models/User';
@@ -76,16 +75,20 @@ export const searchUsers = async ({
 }) => {
     const matchClauses = createMatchClauses(match);
     const filters = [
-        { filterArray: roles, filterName: 'roles', filterOptions: roleOptions.map((option) => option.value) },
+        {
+            filterArray: roles,
+            filterName: 'roles',
+            filterOptions: config.roleOptions.map((option) => option.value) || [],
+        },
         {
             filterArray: dataUses,
             filterName: 'portal_usages',
-            filterOptions: usageOptions.map((option) => option.value),
+            filterOptions: config.usageOptions?.map((option) => option.value) || [],
         },
         {
             filterArray: researchDomains,
             filterName: 'research_domains',
-            filterOptions: researchDomainOptions.map((option) => option.value),
+            filterOptions: config.researchDomainOptions?.map((option) => option.value) || [],
         },
     ];
     const andClauses = createAndClauses(filters);

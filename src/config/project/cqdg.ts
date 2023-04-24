@@ -1,50 +1,48 @@
+const otherKey = 'other';
+
+const profileImageExtension = 'jpeg';
+
+const cleanedUserAttributes = [
+    'id',
+    'keycloak_id',
+    'first_name',
+    'last_name',
+    'roles',
+    'portal_usages',
+    'creation_date',
+    'updated_date',
+    'public_email',
+    'commercial_use_reason',
+    'linkedin',
+    'affiliation',
+    'profile_image_key',
+    'research_domains',
+];
+
 export const roleOptions = [
+    {
+        value: 'bioinformatician_software_developer',
+        label: 'Bioinformatician, software developer',
+    },
     {
         value: 'clinician',
         label: 'Clinician',
     },
     {
-        value: 'community_member',
-        label: 'Community Member',
+        value: 'employee_in_governmental_agency',
+        label: 'Employee in a governmental agency',
     },
     {
-        value: 'developer',
-        label: 'Tool or Algorithm Developer',
+        value: 'researcher_in_academic_or_non_profit_institution',
+        label: 'Researcher in an academic or non-profit institution',
     },
     {
-        value: 'federal_employee',
-        label: 'Federal Employee',
+        value: 'representative_of_commercial_or_for_profit_company',
+        label: 'Representative of a commercial or for-profit company',
     },
     {
-        value: 'researcher',
-        label: 'Researcher at an Academic or not-for-profit Institution',
-    },
-    {
-        value: 'representative',
-        label: 'Representative from a for-profit or Commercial Entity',
-    },
-    {
-        label: 'Other',
         value: 'other',
-    },
-];
-
-export const usageOptions = [
-    {
-        value: 'commercial_purpose',
-        label: 'Commercial purposes',
-    },
-    {
-        value: 'identifying_dataset',
-        label: 'Identifying datasets that I want to analyze',
-    },
-    {
-        value: 'help_design_new_research_study',
-        label: 'Helping me design a new research study',
-    },
-    {
-        value: 'learn_more_about_down_syndrome',
-        label: 'Learning more about Down syndrome and its health outcomes, management, and/or treatment',
+        label: 'Other',
     },
 ];
 
@@ -102,11 +100,15 @@ export const researchDomainOptions = [
         label: 'Rare Diseases',
     },
     {
-        value: 'not_applicable',
-        label: 'Not Applicable',
-    },
-    {
         label: 'Other',
         value: 'other',
     },
 ];
+
+export default {
+    otherKey,
+    profileImageExtension,
+    cleanedUserAttributes,
+    researchDomainOptions,
+    roleOptions,
+};
