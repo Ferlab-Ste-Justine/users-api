@@ -1,5 +1,4 @@
 import { Request, Router } from 'express';
-import createHttpError from 'http-errors';
 import { StatusCodes } from 'http-status-codes';
 import { Order } from 'sequelize';
 
@@ -27,9 +26,6 @@ interface CustomReqQuery {
     roles?: string;
     dataUses?: string;
     researchDomains?: string;
-    roleOptions?: string;
-    usageOptions?: string;
-    researchDomainsOptions?: string;
 }
 
 /**
@@ -59,14 +55,6 @@ usersRouter.get('/search', async (req: Request<any, any, any, CustomReqQuery>, r
             });
         }
 
-        const roleOptions = req.query.roleOptions ? req.query.roleOptions.split(',') : [];
-        const usageOptions = req.query.usageOptions ? req.query.usageOptions.split(',') : [];
-        const researchDomainsOptions = req.query.researchDomainsOptions?.split(',') || [];
-
-        if (!roleOptions.length || !roleOptions.length) {
-            throw createHttpError(StatusCodes.BAD_REQUEST, 'roleOptions and usageOptions array must be provided.');
-        }
-
         const result = await searchUsers({
             pageSize,
             pageIndex,
@@ -75,9 +63,6 @@ usersRouter.get('/search', async (req: Request<any, any, any, CustomReqQuery>, r
             roles,
             dataUses,
             researchDomains,
-            roleOptions,
-            usageOptions,
-            researchDomainsOptions,
         });
         res.status(StatusCodes.OK).send(result);
     } catch (e) {

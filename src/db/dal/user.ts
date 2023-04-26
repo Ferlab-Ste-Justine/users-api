@@ -64,9 +64,6 @@ export const searchUsers = async ({
     roles,
     dataUses,
     researchDomains,
-    roleOptions,
-    usageOptions,
-    researchDomainsOptions,
 }: {
     pageSize: number;
     pageIndex: number;
@@ -75,15 +72,24 @@ export const searchUsers = async ({
     roles: string[];
     dataUses: string[];
     researchDomains: string[];
-    roleOptions: string[];
-    usageOptions: string[];
-    researchDomainsOptions: string[];
 }) => {
     const matchClauses = createMatchClauses(match);
     const filters = [
-        { filterArray: roles, filterName: 'roles', filterOptions: roleOptions },
-        { filterArray: dataUses, filterName: 'portal_usages', filterOptions: usageOptions },
-        { filterArray: researchDomains, filterName: 'research_domains', filterOptions: researchDomainsOptions },
+        {
+            filterArray: roles,
+            filterName: 'roles',
+            filterOptions: config.roleOptions.map((option) => option.value) || [],
+        },
+        {
+            filterArray: dataUses,
+            filterName: 'portal_usages',
+            filterOptions: config.usageOptions?.map((option) => option.value) || [],
+        },
+        {
+            filterArray: researchDomains,
+            filterName: 'research_domains',
+            filterOptions: config.researchDomainOptions?.map((option) => option.value) || [],
+        },
     ];
     const andClauses = createAndClauses(filters);
 
