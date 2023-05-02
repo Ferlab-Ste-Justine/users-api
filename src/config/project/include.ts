@@ -17,6 +17,7 @@ const cleanedUserAttributes = [
     'affiliation',
     'profile_image_key',
     'research_domains',
+    'research_area_description',
 ];
 
 const roleOptions = [
