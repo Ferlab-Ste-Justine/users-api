@@ -2,12 +2,12 @@ import { Express } from 'express';
 import Keycloak from 'keycloak-connect';
 import request from 'supertest';
 
-import { getToken, publicKey } from '../test/authTestUtils';
-import buildApp from './app';
-import { createUser, getUserById, updateUser } from './db/dal/user';
-import { IUserInput } from './db/models/User';
+import { getToken, publicKey } from '../../test/authTestUtils';
+import buildApp from '../app';
+import { createUser, getUserById, updateUser } from '../db/dal/user';
+import { IUserInput } from '../db/models/User';
 
-jest.mock('./db/dal/user');
+jest.mock('../db/dal/user');
 
 const checkBody = (expectedBody) => (res) => {
     expect(JSON.stringify(res.body)).toEqual(JSON.stringify(expectedBody));
