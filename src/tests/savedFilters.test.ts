@@ -76,9 +76,6 @@ describe('Validate filters handle query pills', () => {
             ];
 
             const result = removeQueryFromFilters(initialFilters, '0a1292c2-0bab-4190-a8d1-6db6e125af8a');
-            // TODO le spy marche pas, trouver une facon de mock le result de getPillContent
-            // const spy = jest.spyOn(savedFilters, 'getPillContent').mockImplementation(
-            //     () =>
 
             expect(JSON.stringify(result)).not.toContain('0a1292c2-0bab-4190-a8d1-6db6e125af8a');
         });
