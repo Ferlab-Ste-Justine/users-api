@@ -1,6 +1,6 @@
 import Realm from '../config/realm';
 import { IUserInput } from '../db/models/User';
-import { getUserValidator } from './userValidator';
+import { getUserValidator } from '../utils/userValidator';
 
 describe('User Validator', () => {
     describe('getUserValidator', () => {

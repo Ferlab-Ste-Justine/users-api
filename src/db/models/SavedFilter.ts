@@ -6,6 +6,7 @@ interface ISavedFilterAttributes {
     id: string;
     keycloak_id: string;
     title: string;
+    type: string;
     tag: string;
     queries: any[];
     favorite: boolean;
@@ -24,6 +25,7 @@ class SavedFilterModel extends Model<ISavedFilterAttributes, ISavedFilterInput> 
     public title!: string;
     public tag!: string;
     public queries!: any[];
+    public type!: string;
     public creation_date!: Date;
     public updated_date!: Date;
     public favorite!: boolean;
@@ -42,6 +44,7 @@ SavedFilterModel.init(
         },
         title: DataTypes.TEXT,
         tag: DataTypes.TEXT,
+        type: DataTypes.ENUM('query', 'filter'),
         favorite: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
