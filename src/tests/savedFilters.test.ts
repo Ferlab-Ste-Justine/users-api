@@ -1,4 +1,4 @@
-import {removeQueryFromFilters, updateQuery, getFilterIDs} from '../utils/savedFilters';
+import { getFilterIDs, removeQueryFromFilters, updateQuery } from '../utils/savedFilters';
 import * as savedFilters from '../utils/savedFilters';
 
 describe('Validate filters handle query pills', () => {
@@ -79,18 +79,20 @@ describe('Validate filters handle query pills', () => {
             // TODO le spy marche pas, trouver une facon de mock le result de getPillContent
             // const spy = jest.spyOn(savedFilters, 'getPillContent').mockImplementation(
             //     () =>
-            const value = new Promise((resolve) => {
-                resolve({query: {content: 'abcde'}, title: 'fghijklm', filterID: '1234'});
-            });
-            const spy = jest.spyOn(savedFilters, 'getPillContent').mockReturnValue(value as any)
 
             expect(JSON.stringify(result)).not.toContain('0a1292c2-0bab-4190-a8d1-6db6e125af8a');
         });
 
         it('replace object containing filterID with query content', async () => {
-            const query = {content: [{filterID: '0a1292c2-0bab-4190-a8d1-6db6e125af8a'}]};
+            const value = new Promise((resolve) => {
+                resolve({ query: { content: 'abcde' }, title: 'fghijklm', filterID: '1234' });
+            });
+            jest.spyOn(savedFilters, 'getPillContent').mockReturnValue(value as any);
+            const query = { content: [{ filterID: '0a1292c2-0bab-4190-a8d1-6db6e125af8a' }] };
             const updatedQuery = await updateQuery(query);
-            expect(updatedQuery).toEqual({content: [{content: 'abcde', title: 'fghijklm', filterID: '1234'}]});
+            expect(updatedQuery).toEqual({
+                content: [{ content: 'abcde', title: 'fghijklm', filterID: '0a1292c2-0bab-4190-a8d1-6db6e125af8a' }],
+            });
         });
 
         describe('Should create pills that are not saved in the database before saving new filter', function () {
@@ -137,7 +139,7 @@ describe('Validate filters handle query pills', () => {
                                     {
                                         filterID: '0a1292c2-0bab-4190-a8d1-6db6e125af8a',
                                         title: 'une pilule, encore',
-                                        content: []
+                                        content: [],
                                     },
                                 ],
                             },
@@ -155,17 +157,17 @@ describe('Validate filters handle query pills', () => {
                                     {
                                         filterID: '78709fbb-429a-44c7-9f38-ed6afcb61234',
                                         title: 'une pilule',
-                                        content: []
+                                        content: [],
                                     },
                                     {
                                         filterID: '0a1292c2-0bab-4190-a8d1-6db6e125a7890',
                                         title: 'une autre pilule',
-                                        content: []
+                                        content: [],
                                     },
                                     {
                                         filterID: '0a1292c2-0bab-4190-a8d1-6db6e125a7890',
                                         title: 'une autre pilule',
-                                        content: []
+                                        content: [],
                                     },
                                 ],
                             },
@@ -174,27 +176,27 @@ describe('Validate filters handle query pills', () => {
                     },
                 ];
 
-                const result = getFilterIDs(aJson)
+                const result = getFilterIDs(aJson);
                 const expectedResult = {
                     '0a1292c2-0bab-4190-a8d1-6db6e125af8a': {
                         filterID: '0a1292c2-0bab-4190-a8d1-6db6e125af8a',
                         title: 'une pilule, encore',
-                        content: []
+                        content: [],
                     },
                     '78709fbb-429a-44c7-9f38-ed6afcb61234': {
                         filterID: '78709fbb-429a-44c7-9f38-ed6afcb61234',
                         title: 'une pilule',
-                        content: []
+                        content: [],
                     },
                     '0a1292c2-0bab-4190-a8d1-6db6e125a7890': {
                         filterID: '0a1292c2-0bab-4190-a8d1-6db6e125a7890',
                         title: 'une autre pilule',
-                        content: []
+                        content: [],
                     },
                 };
 
                 expect(expectedResult).toEqual(result);
-            })
+            });
         });
     });
 });

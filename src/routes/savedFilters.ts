@@ -31,7 +31,7 @@ savedFiltersRouter.get('/', async (req, res, next) => {
         const results: any = await getAll({ keycloak_id, type: req.query.type } as any);
         if (req.query.type === 'filter' || !req.query.type) {
             const updatedResults = [];
-            for (let i = 0; i < results.length - 1; i++) {
+            for (let i = 0; i < results.length; i++) {
                 const result = results[i];
                 result.queries = await Promise.all(result.queries.map(async (query) => await updateQuery(query)));
                 updatedResults.push(result);
