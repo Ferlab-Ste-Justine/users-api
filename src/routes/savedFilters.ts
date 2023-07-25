@@ -48,7 +48,8 @@ savedFiltersRouter.get('/', async (req, res, next) => {
 savedFiltersRouter.get('/tag/:tagid', async (req, res, next) => {
     try {
         const keycloak_id = req['kauth']?.grant?.access_token?.content?.sub;
-        const result = await getAll({ keycloak_id, tagid: req.params.tagid } as any);
+        const type = req.query.type ? req.query.type : 'filter';
+        const result = await getAll({ keycloak_id, tagid: req.params.tagid, type } as any);
         res.status(StatusCodes.OK).send(result);
     } catch (e) {
         next(e);
