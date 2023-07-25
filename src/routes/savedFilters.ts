@@ -9,9 +9,9 @@ import {
     getById,
     getFiltersUsingQuery,
     update,
-    updateAsDefault
+    updateAsDefault,
 } from '../db/dal/savedFilter';
-import { getFilterIDs, removeQueryFromFilters, updateQuery } from '../utils/savedFilters';
+import { errorHandler, getFilterIDs, removeQueryFromFilters, updateQuery } from '../utils/savedFilters';
 // Handles requests made to /saved-filters
 const savedFiltersRouter = Router();
 
@@ -71,6 +71,7 @@ savedFiltersRouter.post('/', async (req, res, next) => {
             res.status(StatusCodes.CREATED).send(result);
         }
     } catch (e) {
+        errorHandler(e, res);
         next(e);
     }
 });
@@ -81,6 +82,7 @@ savedFiltersRouter.put('/:id', async (req, res, next) => {
         const result = await update(keycloak_id, req.params.id, req.body);
         res.status(StatusCodes.OK).send(result);
     } catch (e) {
+        errorHandler(e, res);
         next(e);
     }
 });

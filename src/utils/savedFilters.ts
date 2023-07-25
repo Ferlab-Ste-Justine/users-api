@@ -1,4 +1,6 @@
-import {getById} from '../db/dal/savedFilter';
+import { StatusCodes } from 'http-status-codes';
+
+import { getById } from '../db/dal/savedFilter';
 
 const removeFilterFromContent = (content, id) => {
     if (content)
@@ -24,11 +26,11 @@ export const removeQueryFromFilters = (filters, id) => {
 
 export const getPillContent = async (filterID: string) => {
     const pill = await getById(filterID);
-    return { query: pill.queries[0], title: pill.title, filterID};
+    return { query: pill.queries[0], title: pill.title, filterID };
 };
 const updateContent = async (content) => {
     if (content.filterID) {
-        const { query, title} = await getPillContent(content.filterID);
+        const { query, title } = await getPillContent(content.filterID);
         query.title = title;
         query.filterID = content.filterID;
         return query;
@@ -66,4 +68,16 @@ export const getFilterIDs = (json) => {
 
     traverse(json);
     return result;
+};
+
+export const errorHandler = (e, res) => {
+    if (e.errors.some((err) => err.validatorKey === 'not_unique' && err.path === 'title')) {
+        const err = e.errors.find((err) => err.validatorKey === 'not_unique' && err.path === 'title');
+        res.status(StatusCodes.UNPROCESSABLE_ENTITY).send({
+            error: {
+                message: err.message,
+                translationKey: `${err.instance.dataValues.type || 'filter'}.error.save.nameAlreadyExists`,
+            },
+        });
+    }
 };
