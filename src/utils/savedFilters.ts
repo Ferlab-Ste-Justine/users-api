@@ -30,6 +30,7 @@ export const getPillContent = async (filterID: string) => {
     const pill = await getById(filterID);
     return { query: pill.queries[0], title: pill.title, filterID };
 };
+
 const updateContent = async (content) => {
     if (content.filterID) {
         const { query, title } = await getPillContent(content.filterID);
@@ -103,4 +104,4 @@ export const handleUniqueName = async (filter) => {
             key: 'title.not_unique',
             message: `A ${filter.type || 'filter'} with this title already exists`,
         };
-};
+}
