@@ -69,12 +69,8 @@ SavedFilterModel.init(
     { sequelize: sequelizeConnection, modelName: 'saved_filters', timestamps: false },
 );
 
-SavedFilterModel.beforeCreate(async (filter) => {
-    await handleUniqueName(filter);
-});
+SavedFilterModel.beforeCreate(handleUniqueName);
 
-SavedFilterModel.beforeUpdate(async (filter) => {
-    await handleUniqueName(filter);
-});
+SavedFilterModel.beforeUpdate(handleUniqueName);
 
 export default SavedFilterModel;

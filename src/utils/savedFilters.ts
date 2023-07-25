@@ -73,12 +73,10 @@ export const getFilterIDs = (json) => {
     return result;
 };
 
-export const errorHandler = (e, res) => {
-    if (
-        e.key === 'title.not_unique' ||
-        e.errors.some((err) => err.validatorKey === 'not_unique' && err.path === 'title')
-    ) {
-        const err = e.errors ? e.errors.find((err) => err.validatorKey === 'not_unique' && err.path === 'title') : e;
+export const uniqueNameErrorHandler = (e, res) => {
+    const callback = (err) => err.validatorKey === 'not_unique' && err.path === 'title';
+    if (e.key === 'title.not_unique' || e.errors.some(callback)) {
+        const err = e.errors ? e.errors.find(callback) : e;
         res.status(StatusCodes.UNPROCESSABLE_ENTITY).send({
             error: {
                 message: err.message,
@@ -88,8 +86,8 @@ export const errorHandler = (e, res) => {
     }
 };
 
-export const handleUniqueName = async (filter) => {
-    const count = await sequelizeConnection
+const getCount = (filter) =>
+    sequelizeConnection
         .query(
             'SELECT count(*) from saved_filters where keycloak_id = :keycloak_id and title = :title and type = :type',
             {
@@ -97,11 +95,16 @@ export const handleUniqueName = async (filter) => {
                 type: QueryTypes.SELECT,
             },
         )
-        .then((res) => res[0]['count'])
-        .catch((err) => console.error('unable to to the hooks query', err));
+        .then((res) => res[0]['count']);
+
+export const handleUniqueName = async (filter) => {
+    const count = await getCount(filter);
     if (count > 0)
         throw {
             key: 'title.not_unique',
             message: `A ${filter.type || 'filter'} with this title already exists`,
+            instance: {
+                dataValues: filter,
+            },
         };
-}
+};
