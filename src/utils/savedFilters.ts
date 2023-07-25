@@ -1,5 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
+import { QueryTypes } from 'sequelize';
 
+import sequelizeConnection from '../db/config';
 import { getById } from '../db/dal/savedFilter';
 
 const removeFilterFromContent = (content, id) => {
@@ -71,8 +73,11 @@ export const getFilterIDs = (json) => {
 };
 
 export const errorHandler = (e, res) => {
-    if (e.errors.some((err) => err.validatorKey === 'not_unique' && err.path === 'title')) {
-        const err = e.errors.find((err) => err.validatorKey === 'not_unique' && err.path === 'title');
+    if (
+        e.key === 'title.not_unique' ||
+        e.errors.some((err) => err.validatorKey === 'not_unique' && err.path === 'title')
+    ) {
+        const err = e.errors ? e.errors.find((err) => err.validatorKey === 'not_unique' && err.path === 'title') : e;
         res.status(StatusCodes.UNPROCESSABLE_ENTITY).send({
             error: {
                 message: err.message,
@@ -80,4 +85,22 @@ export const errorHandler = (e, res) => {
             },
         });
     }
+};
+
+export const handleUniqueName = async (filter) => {
+    const count = await sequelizeConnection
+        .query(
+            'SELECT count(*) from saved_filters where keycloak_id = :keycloak_id and title = :title and type = :type',
+            {
+                replacements: { keycloak_id: filter.keycloak_id, title: filter.title, type: filter.type || 'filter' },
+                type: QueryTypes.SELECT,
+            },
+        )
+        .then((res) => res[0]['count'])
+        .catch((err) => console.error('unable to to the hooks query', err));
+    if (count > 0)
+        throw {
+            key: 'title.not_unique',
+            message: `A ${filter.type || 'filter'} with this title already exists`,
+        };
 };
