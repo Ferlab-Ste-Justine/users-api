@@ -1,7 +1,11 @@
+import { type } from 'os';
 import { DataTypes, Model } from 'sequelize';
+import validator from 'validator';
 
+import typeValidators from '../../typeValidators';
 import sequelizeConnection from '../config';
 
+const { escape } = validator;
 interface ISavedFilterAttributes {
     id: string;
     keycloak_id: string;
@@ -16,6 +20,7 @@ interface ISavedFilterAttributes {
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ISavedFilterInput extends ISavedFilterAttributes {}
+
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ISavedFilterOutput extends ISavedFilterAttributes {}
 
@@ -33,38 +38,21 @@ class SavedFilterModel extends Model<ISavedFilterAttributes, ISavedFilterInput> 
 
 SavedFilterModel.init(
     {
-        id: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            primaryKey: true,
-        },
-        keycloak_id: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-        title: DataTypes.TEXT,
-        tag: DataTypes.TEXT,
+        id: { ...typeValidators.UUID, primaryKey: true },
+        keycloak_id: typeValidators.UUID,
+        title: typeValidators.TEXT,
         type: DataTypes.ENUM('query', 'filter'),
-        favorite: {
-            type: DataTypes.BOOLEAN,
-            allowNull: false,
-            defaultValue: false,
-        },
-        queries: {
-            type: DataTypes.ARRAY(DataTypes.JSONB),
-            allowNull: false,
-            defaultValue: [],
-        },
-        creation_date: {
-            type: DataTypes.DATE,
-            defaultValue: new Date(),
-        },
-        updated_date: {
-            type: DataTypes.DATE,
-            defaultValue: new Date(),
-        },
+        tag: typeValidators.STRING,
+        queries: typeValidators.JSON_ARRAY,
+        favorite: typeValidators.BOOLEAN,
+        creation_date: typeValidators.DATE,
+        updated_date: DataTypes.DATE, // TODO use our validator instead
     },
-    { sequelize: sequelizeConnection, modelName: 'saved_filters', timestamps: false },
+    {
+        sequelize: sequelizeConnection,
+        modelName: 'saved_filters',
+        timestamps: false,
+    },
 );
 
 export default SavedFilterModel;
