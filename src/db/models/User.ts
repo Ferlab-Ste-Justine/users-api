@@ -1,5 +1,4 @@
 import { DataTypes, Model } from 'sequelize';
-import validator from 'validator';
 
 import typeValidators from '../../typeValidators';
 import sequelizeConnection from '../config';
