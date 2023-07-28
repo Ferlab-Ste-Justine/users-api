@@ -1,11 +1,8 @@
-import { type } from 'os';
 import { DataTypes, Model } from 'sequelize';
-import validator from 'validator';
 
 import typeValidators from '../../typeValidators';
 import sequelizeConnection from '../config';
 
-const { escape } = validator;
 interface ISavedFilterAttributes {
     id: string;
     keycloak_id: string;
@@ -46,7 +43,7 @@ SavedFilterModel.init(
         queries: typeValidators.JSON_ARRAY,
         favorite: typeValidators.BOOLEAN,
         creation_date: typeValidators.DATE,
-        updated_date: DataTypes.DATE, // TODO use our validator instead
+        updated_date: DataTypes.DATE,
     },
     {
         sequelize: sequelizeConnection,

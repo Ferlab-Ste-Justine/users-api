@@ -31,7 +31,7 @@ export default {
         type: DataTypes.TEXT,
         validate: {
             isValid(value) {
-                if (!validator.isAlpha(escape(value), 'fr-FR')) throw new Error('%s is not valid text');
+                if (!validator.isAlphanumeric(escape(value), 'fr-FR')) throw new Error('%s is not valid text');
             },
         },
     },
