@@ -1,5 +1,6 @@
 import { DataTypes, Model } from 'sequelize';
 
+import { NAME_REGEX, UUID_VERSION } from '../../utils/constants';
 import sequelizeConnection from '../config';
 
 interface IUserAttributes {
@@ -66,7 +67,7 @@ UserModel.init(
             type: DataTypes.STRING,
             allowNull: false,
             validate: {
-                isUUID: 4,
+                isUUID: UUID_VERSION,
             },
         },
         deleted: {
@@ -79,15 +80,15 @@ UserModel.init(
         first_name: {
             type: DataTypes.CITEXT,
             validate: {
-                len: [1, 20],
-                isAlpha: true,
+                len: [1, 35],
+                is: NAME_REGEX,
             },
         },
         last_name: {
             type: DataTypes.CITEXT,
             validate: {
-                len: [1, 20],
-                isAlpha: true,
+                len: [1, 35],
+                is: NAME_REGEX,
             },
         },
         era_commons_id: {
@@ -193,9 +194,6 @@ UserModel.init(
             type: DataTypes.JSONB,
             allowNull: false,
             defaultValue: {},
-            validate: {
-                isJSON: true,
-            },
         },
     },
     { sequelize: sequelizeConnection, modelName: 'users', timestamps: false },

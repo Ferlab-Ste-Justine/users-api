@@ -1,5 +1,6 @@
 import { DataTypes, Model } from 'sequelize';
 
+import { NAME_REGEX, UUID_VERSION } from '../../utils/constants';
 import sequelizeConnection from '../config';
 
 interface ISavedFilterAttributes {
@@ -38,20 +39,20 @@ SavedFilterModel.init(
             allowNull: false,
             primaryKey: true,
             validate: {
-                isUUID: 4,
+                isUUID: UUID_VERSION,
             },
         },
         keycloak_id: {
             type: DataTypes.STRING,
             allowNull: false,
             validate: {
-                isUUID: 4,
+                isUUID: UUID_VERSION,
             },
         },
         title: {
             type: DataTypes.TEXT,
             validate: {
-                isAlphanumeric: true,
+                is: NAME_REGEX,
             },
         },
         tag: DataTypes.TEXT,
@@ -68,9 +69,6 @@ SavedFilterModel.init(
             type: DataTypes.ARRAY(DataTypes.JSONB),
             allowNull: false,
             defaultValue: [],
-            validate: {
-                isJSON: true,
-            },
         },
         creation_date: {
             type: DataTypes.DATE,

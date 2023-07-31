@@ -1,5 +1,6 @@
 import { DataTypes, Model } from 'sequelize';
 
+import { UUID_VERSION } from '../../utils/constants';
 import sequelizeConnection from '../config';
 
 interface IUserSetAttributes {
@@ -35,14 +36,14 @@ UserSetModel.init(
             autoIncrement: true,
             primaryKey: true,
             validate: {
-                isUUID: 4,
+                isUUID: UUID_VERSION,
             },
         },
         keycloak_id: {
             type: DataTypes.STRING,
             allowNull: false,
             validate: {
-                isUUID: 4,
+                isUUID: UUID_VERSION,
             },
         },
         alias: {
@@ -64,9 +65,6 @@ UserSetModel.init(
             type: DataTypes.JSONB,
             allowNull: false,
             defaultValue: {},
-            validate: {
-                isJSON: true,
-            },
         },
         creation_date: {
             type: DataTypes.DATE,

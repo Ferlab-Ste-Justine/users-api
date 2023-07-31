@@ -13,7 +13,7 @@ export const globalErrorHandler = (err: unknown, _req: Request, res: Response, _
             name: 'Invalid data',
             errors: err.errors.map((error) => error.message.replace('%s', error.path)),
         };
-        res.status(422).json({
+        res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
             error,
         });
     } else if (err instanceof HttpError) {
