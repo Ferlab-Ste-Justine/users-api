@@ -1,6 +1,5 @@
 import { DataTypes, Model } from 'sequelize';
 
-import typeValidators from '../../typeValidators';
 import sequelizeConnection from '../config';
 
 interface IUserAttributes {
@@ -34,7 +33,6 @@ interface IUserAttributes {
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface IUserInput extends IUserAttributes {}
-
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface IUserOuput extends IUserAttributes {}
 
@@ -55,76 +53,152 @@ class UserModel extends Model<IUserAttributes, IUserInput> implements IUserAttri
 UserModel.init(
     {
         id: {
+            type: DataTypes.NUMBER,
             allowNull: false,
             autoIncrement: true,
             primaryKey: true,
-            ...typeValidators.NUMBER,
+            unique: true,
+            validate: {
+                isInt: true,
+            },
         },
-        keycloak_id: typeValidators.UUID,
+        keycloak_id: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            validate: {
+                isUUID: 4,
+            },
+        },
         deleted: {
+            type: DataTypes.BOOLEAN,
             defaultValue: false,
-            ...typeValidators.BOOLEAN,
+            validate: {
+                isBoolean: true,
+            },
         },
         first_name: {
-            ...typeValidators.TEXT,
             type: DataTypes.CITEXT,
+            validate: {
+                len: [1, 20],
+                isAlpha: true,
+            },
         },
         last_name: {
-            ...typeValidators.TEXT,
             type: DataTypes.CITEXT,
+            validate: {
+                len: [1, 20],
+                isAlpha: true,
+            },
         },
-        era_commons_id: typeValidators.STRING,
-        nih_ned_id: typeValidators.STRING,
-        commercial_use_reason: typeValidators.STRING,
-        email: typeValidators.EMAIL,
-        external_individual_fullname: typeValidators.STRING,
-        external_individual_email: typeValidators.EMAIL,
-        roles: DataTypes.ARRAY(typeValidators.STRING),
+        era_commons_id: {
+            type: DataTypes.STRING,
+            validate: {
+                isAlpha: true,
+            },
+        },
+        nih_ned_id: {
+            type: DataTypes.STRING,
+            validate: {
+                isAlpha: true,
+            },
+        },
+        commercial_use_reason: {
+            type: DataTypes.STRING,
+            validate: {
+                isAlpha: true,
+            },
+        },
+        email: {
+            type: DataTypes.STRING,
+            validate: {
+                isEmail: true,
+            },
+        },
+        external_individual_fullname: {
+            type: DataTypes.TEXT,
+            validate: {
+                isAlpha: true,
+            },
+        },
+        external_individual_email: {
+            type: DataTypes.TEXT,
+            validate: {
+                isEmail: true,
+            },
+        },
+        roles: DataTypes.ARRAY(DataTypes.CITEXT),
         affiliation: {
-            ...typeValidators.TEXT,
             type: DataTypes.CITEXT,
+            validate: {
+                isAlphanumeric: true,
+            },
         },
-        public_email: typeValidators.EMAIL,
-        linkedin: typeValidators.URL,
+        public_email: {
+            type: DataTypes.TEXT,
+            validate: {
+                isEmail: true,
+            },
+        },
+        linkedin: {
+            type: DataTypes.TEXT,
+            validate: {
+                isUrl: true,
+                is: /^https?:\/\/(www\.)?linkedin\.com\/in\//i,
+            },
+        },
         portal_usages: DataTypes.ARRAY(DataTypes.CITEXT),
         research_domains: DataTypes.ARRAY(DataTypes.CITEXT),
-        research_area_description: typeValidators.TEXT,
-        profile_image_key: typeValidators.TEXT,
+        research_area_description: DataTypes.TEXT,
+        profile_image_key: DataTypes.TEXT,
         creation_date: {
-            ...typeValidators.DATE,
+            type: DataTypes.DATE,
             defaultValue: new Date(),
+            validate: {
+                isDate: true,
+            },
         },
         updated_date: {
-            ...typeValidators.DATE,
+            type: DataTypes.DATE,
             defaultValue: new Date(),
+            validate: {
+                isDate: true,
+            },
         },
-        consent_date: typeValidators.DATE,
+        consent_date: DataTypes.DATE,
         accepted_terms: {
-            ...typeValidators.BOOLEAN,
+            type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: false,
+            validate: {
+                isBoolean: true,
+            },
         },
         understand_disclaimer: {
-            ...typeValidators.BOOLEAN,
+            type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: false,
+            validate: {
+                isBoolean: true,
+            },
         },
         completed_registration: {
-            ...typeValidators.BOOLEAN,
+            type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: false,
+            validate: {
+                isBoolean: true,
+            },
         },
         config: {
-            ...typeValidators.JSON,
+            type: DataTypes.JSONB,
             allowNull: false,
             defaultValue: {},
+            validate: {
+                isJSON: true,
+            },
         },
     },
-    {
-        sequelize: sequelizeConnection,
-        modelName: 'users',
-        timestamps: false,
-    },
+    { sequelize: sequelizeConnection, modelName: 'users', timestamps: false },
 );
 
 export default UserModel;

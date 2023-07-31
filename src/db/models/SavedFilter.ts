@@ -1,6 +1,5 @@
 import { DataTypes, Model } from 'sequelize';
 
-import typeValidators from '../../typeValidators';
 import sequelizeConnection from '../config';
 
 interface ISavedFilterAttributes {
@@ -17,7 +16,6 @@ interface ISavedFilterAttributes {
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ISavedFilterInput extends ISavedFilterAttributes {}
-
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ISavedFilterOutput extends ISavedFilterAttributes {}
 
@@ -35,21 +33,61 @@ class SavedFilterModel extends Model<ISavedFilterAttributes, ISavedFilterInput> 
 
 SavedFilterModel.init(
     {
-        id: { ...typeValidators.UUID, primaryKey: true },
-        keycloak_id: typeValidators.UUID,
-        title: typeValidators.TEXT,
+        id: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            primaryKey: true,
+            validate: {
+                isUUID: 4,
+            },
+        },
+        keycloak_id: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            validate: {
+                isUUID: 4,
+            },
+        },
+        title: {
+            type: DataTypes.TEXT,
+            validate: {
+                isAlphanumeric: true,
+            },
+        },
+        tag: DataTypes.TEXT,
         type: DataTypes.ENUM('query', 'filter'),
-        tag: typeValidators.STRING,
-        queries: typeValidators.JSON_ARRAY,
-        favorite: typeValidators.BOOLEAN,
-        creation_date: typeValidators.DATE,
-        updated_date: DataTypes.DATE,
+        favorite: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false,
+            validate: {
+                isBoolean: true,
+            },
+        },
+        queries: {
+            type: DataTypes.ARRAY(DataTypes.JSONB),
+            allowNull: false,
+            defaultValue: [],
+            validate: {
+                isJSON: true,
+            },
+        },
+        creation_date: {
+            type: DataTypes.DATE,
+            defaultValue: new Date(),
+            validate: {
+                isDate: true,
+            },
+        },
+        updated_date: {
+            type: DataTypes.DATE,
+            defaultValue: new Date(),
+            validate: {
+                isDate: true,
+            },
+        },
     },
-    {
-        sequelize: sequelizeConnection,
-        modelName: 'saved_filters',
-        timestamps: false,
-    },
+    { sequelize: sequelizeConnection, modelName: 'saved_filters', timestamps: false },
 );
 
 export default SavedFilterModel;

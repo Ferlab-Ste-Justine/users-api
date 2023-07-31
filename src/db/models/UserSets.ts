@@ -34,32 +34,53 @@ UserSetModel.init(
             allowNull: false,
             autoIncrement: true,
             primaryKey: true,
+            validate: {
+                isUUID: 4,
+            },
         },
         keycloak_id: {
             type: DataTypes.STRING,
             allowNull: false,
+            validate: {
+                isUUID: 4,
+            },
         },
         alias: {
             type: DataTypes.STRING,
             allowNull: false,
+            validate: {
+                isAlpha: true,
+            },
         },
         sharedpublicly: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: false,
+            validate: {
+                isBoolean: true,
+            },
         },
         content: {
             type: DataTypes.JSONB,
             allowNull: false,
             defaultValue: {},
+            validate: {
+                isJSON: true,
+            },
         },
         creation_date: {
             type: DataTypes.DATE,
             defaultValue: new Date(),
+            validate: {
+                isDate: true,
+            },
         },
         updated_date: {
             type: DataTypes.DATE,
             defaultValue: new Date(),
+            validate: {
+                isDate: true,
+            },
         },
     },
     { sequelize: sequelizeConnection, modelName: 'user_sets', timestamps: false },
