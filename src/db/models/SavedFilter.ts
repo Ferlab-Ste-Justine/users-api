@@ -1,6 +1,7 @@
 import { DataTypes, Model } from 'sequelize';
 
 import { NAME_REGEX, UUID_VERSION } from '../../utils/constants';
+import { handleUniqueName } from '../../utils/savedFilters';
 import sequelizeConnection from '../config';
 
 interface ISavedFilterAttributes {
@@ -17,6 +18,7 @@ interface ISavedFilterAttributes {
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ISavedFilterInput extends ISavedFilterAttributes {}
+
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ISavedFilterOutput extends ISavedFilterAttributes {}
 
@@ -87,5 +89,9 @@ SavedFilterModel.init(
     },
     { sequelize: sequelizeConnection, modelName: 'saved_filters', timestamps: false },
 );
+
+SavedFilterModel.beforeCreate(handleUniqueName);
+
+SavedFilterModel.beforeUpdate(handleUniqueName);
 
 export default SavedFilterModel;

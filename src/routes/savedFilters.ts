@@ -9,9 +9,10 @@ import {
     getById,
     getFiltersUsingQuery,
     update,
-    updateAsDefault
+    updateAsDefault,
 } from '../db/dal/savedFilter';
-import { getFilterIDs, removeQueryFromFilters, updateQuery } from '../utils/savedFilters';
+import { uniqueNameErrorHandler, getFilterIDs, removeQueryFromFilters, updateQuery } from '../utils/savedFilters';
+
 // Handles requests made to /saved-filters
 const savedFiltersRouter = Router();
 
@@ -48,7 +49,8 @@ savedFiltersRouter.get('/', async (req, res, next) => {
 savedFiltersRouter.get('/tag/:tagid', async (req, res, next) => {
     try {
         const keycloak_id = req['kauth']?.grant?.access_token?.content?.sub;
-        const result = await getAll({ keycloak_id, tagid: req.params.tagid } as any);
+        const type = req.query.type || 'filter';
+        const result = await getAll({ keycloak_id, tagid: req.params.tagid, type } as any)
         res.status(StatusCodes.OK).send(result);
     } catch (e) {
         next(e);
@@ -71,6 +73,7 @@ savedFiltersRouter.post('/', async (req, res, next) => {
             res.status(StatusCodes.CREATED).send(result);
         }
     } catch (e) {
+        uniqueNameErrorHandler(e, res);
         next(e);
     }
 });
@@ -81,6 +84,7 @@ savedFiltersRouter.put('/:id', async (req, res, next) => {
         const result = await update(keycloak_id, req.params.id, req.body);
         res.status(StatusCodes.OK).send(result);
     } catch (e) {
+        uniqueNameErrorHandler(e, res);
         next(e);
     }
 });
