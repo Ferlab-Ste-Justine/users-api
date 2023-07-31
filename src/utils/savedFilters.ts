@@ -1,4 +1,8 @@
-import {getById} from '../db/dal/savedFilter';
+import { StatusCodes } from 'http-status-codes';
+import { QueryTypes } from 'sequelize';
+
+import sequelizeConnection from '../db/config';
+import { getById } from '../db/dal/savedFilter';
 
 const removeFilterFromContent = (content, id) => {
     if (content)
@@ -24,11 +28,12 @@ export const removeQueryFromFilters = (filters, id) => {
 
 export const getPillContent = async (filterID: string) => {
     const pill = await getById(filterID);
-    return { query: pill.queries[0], title: pill.title, filterID};
+    return { query: pill.queries[0], title: pill.title, filterID };
 };
+
 const updateContent = async (content) => {
     if (content.filterID) {
-        const { query, title} = await getPillContent(content.filterID);
+        const { query, title } = await getPillContent(content.filterID);
         query.title = title;
         query.filterID = content.filterID;
         return query;
@@ -66,4 +71,40 @@ export const getFilterIDs = (json) => {
 
     traverse(json);
     return result;
+};
+
+export const uniqueNameErrorHandler = (e, res) => {
+    const callback = (err) => err.validatorKey === 'not_unique' && err.path === 'title';
+    if (e.key === 'title.not_unique' || e.errors.some(callback)) {
+        const err = e.errors ? e.errors.find(callback) : e;
+        res.status(StatusCodes.UNPROCESSABLE_ENTITY).send({
+            error: {
+                message: err.message,
+                translationKey: `${err.instance.dataValues.type || 'filter'}.error.save.nameAlreadyExists`,
+            },
+        });
+    }
+};
+
+const getCount = (filter) =>
+    sequelizeConnection
+        .query(
+            'SELECT count(*) from saved_filters where keycloak_id = :keycloak_id and title = :title and type = :type',
+            {
+                replacements: { keycloak_id: filter.keycloak_id, title: filter.title, type: filter.type || 'filter' },
+                type: QueryTypes.SELECT,
+            },
+        )
+        .then((res) => res[0]['count']);
+
+export const handleUniqueName = async (filter) => {
+    const count = await getCount(filter);
+    if (count > 0)
+        throw {
+            key: 'title.not_unique',
+            message: `A ${filter.type || 'filter'} with this title already exists`,
+            instance: {
+                dataValues: filter,
+            },
+        };
 };
