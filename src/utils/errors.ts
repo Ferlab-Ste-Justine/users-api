@@ -14,7 +14,7 @@ export const globalErrorHandler = (err: unknown, _req: Request, res: Response, _
         });
     } else if (err instanceof Error || err instanceof BaseError) {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            error: getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR),
+            error: err.message || getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR),
         });
     } else {
         throw err;
