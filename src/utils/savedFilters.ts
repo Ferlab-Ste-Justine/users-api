@@ -8,10 +8,10 @@ import { getById } from '../db/dal/savedFilter';
 const removeFilterFromContent = (content, id) => {
     if (content)
         return content.map((obj) => {
-            if (content.content) return removeFilterFromContent(obj.content, id);
-            if (obj.filterID !== id) {
+            if (obj.filterID !== id && obj.title && obj.id !== id) {
                 return obj;
             }
+            if (content.content) return removeFilterFromContent(obj.content, id);
         });
 };
 

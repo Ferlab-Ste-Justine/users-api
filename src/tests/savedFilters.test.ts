@@ -80,6 +80,78 @@ describe('Validate filters handle query pills', () => {
             expect(JSON.stringify(result)).not.toContain('0a1292c2-0bab-4190-a8d1-6db6e125af8a');
         });
 
+        it('should remove object with title and id', () => {
+            const initialFilters = [
+                {
+                    id: '924569d4-706f-4658-a349-f5168a1ed966',
+                    keycloak_id: '3999fd60-80d2-477d-819e-93f6873efdb2',
+                    title: 'Filtre 3',
+                    tag: 'snv_exploration_rqdm',
+                    type: 'filter',
+                    favorite: false,
+                    queries: [
+                        {
+                            id: '0e21dcc6-27ac-4e83-a386-75bcba8db818',
+                            op: 'and',
+                            content: [
+                                {
+                                    id: '3355ead1-83c2-4003-9ac2-db87c086e6d3',
+                                    op: 'and',
+                                    title: 'pill three',
+                                    content: [
+                                        {
+                                            op: 'in',
+                                            content: {
+                                                field: 'variant_class',
+                                                index: 'Variants',
+                                                value: ['SNV', 'deletion'],
+                                            },
+                                        },
+                                        {
+                                            op: 'in',
+                                            content: {
+                                                field: 'variant_external_reference',
+                                                index: 'Variants',
+                                                value: ['DBSNP', 'Clinvar'],
+                                            },
+                                        },
+                                    ],
+                                },
+                                {
+                                    op: 'in',
+                                    content: {
+                                        field: 'donors.analysis_code',
+                                        index: 'Variants',
+                                        value: ['MYOC'],
+                                    },
+                                },
+                            ],
+                        },
+                        {
+                            id: 'c23b89df-36ef-47cf-92c0-28971dea9385',
+                            op: 'and',
+                            content: [
+                                {
+                                    op: 'in',
+                                    content: {
+                                        field: 'donors.analysis_code',
+                                        index: 'Variants',
+                                        value: ['MYOC', 'RGDI', 'EXTUM'],
+                                    },
+                                },
+                            ],
+                        },
+                    ],
+                    creation_date: '2023-08-07T19:07:13.904Z',
+                    updated_date: '2023-08-07T19:07:13.904Z',
+                },
+            ];
+
+            const result = removeQueryFromFilters(initialFilters, '3355ead1-83c2-4003-9ac2-db87c086e6d3');
+
+            expect(JSON.stringify(result)).not.toContain('3355ead1-83c2-4003-9ac2-db87c086e6d3');
+        });
+
         it('replace object containing filterID with query content', async () => {
             const value = new Promise((resolve) => {
                 resolve({ query: { content: 'abcde' }, title: 'fghijklm', filterID: '1234' });
