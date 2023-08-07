@@ -18,7 +18,8 @@ try {
 
 const sanitizeInputPayload = (payload: IUserInput) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id, keycloak_id, completed_registration, creation_date, ...rest } = payload;
+    const { id, keycloak_id, completed_registration, creation_date, email, era_commons_id, nih_ned_id, ...rest } =
+        payload;
     return rest;
 };
 

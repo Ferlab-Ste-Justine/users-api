@@ -1,5 +1,7 @@
 import { DataTypes, Model } from 'sequelize';
+import validator from 'validator';
 
+import { MAX_LENGTH_PER_ROLE, NAME_REGEX, UUID_VERSION } from '../../utils/constants';
 import sequelizeConnection from '../config';
 
 interface IUserAttributes {
@@ -57,27 +59,107 @@ UserModel.init(
             allowNull: false,
             autoIncrement: true,
             primaryKey: true,
+            unique: true,
+            validate: {
+                isInt: true,
+            },
         },
         keycloak_id: {
             type: DataTypes.STRING,
             allowNull: false,
+            validate: {
+                isUUID: UUID_VERSION,
+            },
         },
         deleted: {
             type: DataTypes.BOOLEAN,
             defaultValue: false,
+            validate: {
+                isBoolean: true,
+            },
         },
-        first_name: DataTypes.CITEXT,
-        last_name: DataTypes.CITEXT,
-        era_commons_id: DataTypes.STRING,
-        nih_ned_id: DataTypes.STRING,
-        commercial_use_reason: DataTypes.STRING,
-        email: DataTypes.STRING,
-        external_individual_fullname: DataTypes.TEXT,
-        external_individual_email: DataTypes.TEXT,
-        roles: DataTypes.ARRAY(DataTypes.CITEXT),
-        affiliation: DataTypes.CITEXT,
-        public_email: DataTypes.TEXT,
-        linkedin: DataTypes.TEXT,
+        first_name: {
+            type: DataTypes.CITEXT,
+            validate: {
+                len: [1, 35],
+                is: NAME_REGEX,
+            },
+        },
+        last_name: {
+            type: DataTypes.CITEXT,
+            validate: {
+                len: [1, 35],
+                is: NAME_REGEX,
+            },
+        },
+        era_commons_id: {
+            type: DataTypes.STRING,
+            validate: {
+                isAlpha: true,
+            },
+        },
+        nih_ned_id: {
+            type: DataTypes.STRING,
+            validate: {
+                isAlpha: true,
+            },
+        },
+        commercial_use_reason: {
+            type: DataTypes.STRING,
+            validate: {
+                is: NAME_REGEX,
+            },
+        },
+        email: {
+            type: DataTypes.STRING,
+            validate: {
+                isEmail: true,
+            },
+        },
+        external_individual_fullname: {
+            type: DataTypes.TEXT,
+            validate: {
+                isAlpha: true,
+            },
+        },
+        external_individual_email: {
+            type: DataTypes.TEXT,
+            validate: {
+                isEmail: true,
+            },
+        },
+        roles: {
+            type: DataTypes.ARRAY(DataTypes.CITEXT),
+            validate: {
+                validate: function (roles) {
+                    const allAlphanumerical = (roles ?? []).every(
+                        (role) => validator.isAlphanumeric(role) && role.length <= MAX_LENGTH_PER_ROLE,
+                    );
+                    if (!allAlphanumerical) {
+                        throw new Error('%s contains invalid values.');
+                    }
+                },
+            },
+        },
+        affiliation: {
+            type: DataTypes.CITEXT,
+            validate: {
+                isAlphanumeric: true,
+            },
+        },
+        public_email: {
+            type: DataTypes.TEXT,
+            validate: {
+                isEmail: true,
+            },
+        },
+        linkedin: {
+            type: DataTypes.TEXT,
+            validate: {
+                isUrl: true,
+                is: /^https?:\/\/(www\.)?linkedin\.com\/in\//i,
+            },
+        },
         portal_usages: DataTypes.ARRAY(DataTypes.CITEXT),
         research_domains: DataTypes.ARRAY(DataTypes.CITEXT),
         research_area_description: DataTypes.TEXT,
@@ -85,26 +167,41 @@ UserModel.init(
         creation_date: {
             type: DataTypes.DATE,
             defaultValue: new Date(),
+            validate: {
+                isDate: true,
+            },
         },
         updated_date: {
             type: DataTypes.DATE,
             defaultValue: new Date(),
+            validate: {
+                isDate: true,
+            },
         },
         consent_date: DataTypes.DATE,
         accepted_terms: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: false,
+            validate: {
+                isBoolean: true,
+            },
         },
         understand_disclaimer: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: false,
+            validate: {
+                isBoolean: true,
+            },
         },
         completed_registration: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: false,
+            validate: {
+                isBoolean: true,
+            },
         },
         config: {
             type: DataTypes.JSONB,

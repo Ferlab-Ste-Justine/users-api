@@ -1,5 +1,6 @@
 import { DataTypes, Model } from 'sequelize';
 
+import { NAME_REGEX, UUID_VERSION } from '../../utils/constants';
 import { handleUniqueName } from '../../utils/savedFilters';
 import sequelizeConnection from '../config';
 
@@ -17,7 +18,6 @@ interface ISavedFilterAttributes {
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ISavedFilterInput extends ISavedFilterAttributes {}
-
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ISavedFilterOutput extends ISavedFilterAttributes {}
 
@@ -39,18 +39,32 @@ SavedFilterModel.init(
             type: DataTypes.STRING,
             allowNull: false,
             primaryKey: true,
+            validate: {
+                isUUID: UUID_VERSION,
+            },
         },
         keycloak_id: {
             type: DataTypes.STRING,
             allowNull: false,
+            validate: {
+                isUUID: UUID_VERSION,
+            },
         },
-        title: DataTypes.TEXT,
+        title: {
+            type: DataTypes.TEXT,
+            validate: {
+                is: NAME_REGEX,
+            },
+        },
         tag: DataTypes.TEXT,
         type: DataTypes.ENUM('query', 'filter'),
         favorite: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: false,
+            validate: {
+                isBoolean: true,
+            },
         },
         queries: {
             type: DataTypes.ARRAY(DataTypes.JSONB),
@@ -60,10 +74,16 @@ SavedFilterModel.init(
         creation_date: {
             type: DataTypes.DATE,
             defaultValue: new Date(),
+            validate: {
+                isDate: true,
+            },
         },
         updated_date: {
             type: DataTypes.DATE,
             defaultValue: new Date(),
+            validate: {
+                isDate: true,
+            },
         },
     },
     { sequelize: sequelizeConnection, modelName: 'saved_filters', timestamps: false },

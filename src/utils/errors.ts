@@ -8,6 +8,14 @@ export const globalErrorHandler = (err: unknown, _req: Request, res: Response, _
         res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
             error: 'A resource with the same id already exists.',
         });
+    } else if (err instanceof ValidationError) {
+        const error = {
+            name: 'Invalid data',
+            errors: err.errors.map((error) => error.message.replace('%s', error.path)),
+        };
+        res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+            error,
+        });
     } else if (err instanceof HttpError) {
         res.status(err.status).json({
             error: err.message,

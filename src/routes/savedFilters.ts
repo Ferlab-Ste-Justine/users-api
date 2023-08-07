@@ -11,7 +11,7 @@ import {
     update,
     updateAsDefault,
 } from '../db/dal/savedFilter';
-import { uniqueNameErrorHandler, getFilterIDs, removeQueryFromFilters, updateQuery } from '../utils/savedFilters';
+import { getFilterIDs, removeQueryFromFilters, uniqueNameErrorHandler, updateQuery } from '../utils/savedFilters';
 
 // Handles requests made to /saved-filters
 const savedFiltersRouter = Router();
@@ -50,7 +50,7 @@ savedFiltersRouter.get('/tag/:tagid', async (req, res, next) => {
     try {
         const keycloak_id = req['kauth']?.grant?.access_token?.content?.sub;
         const type = req.query.type || 'filter';
-        const result = await getAll({ keycloak_id, tagid: req.params.tagid, type } as any)
+        const result = await getAll({ keycloak_id, tagid: req.params.tagid, type } as any);
         res.status(StatusCodes.OK).send(result);
     } catch (e) {
         next(e);
