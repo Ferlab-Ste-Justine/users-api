@@ -1,5 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
-import { QueryTypes } from 'sequelize';
+import { QueryTypes, ValidationError, ValidationErrorItem } from 'sequelize';
+import { ValidationErrorItemType } from 'sequelize/types/errors/validation-error';
 
 import sequelizeConnection from '../db/config';
 import { getById } from '../db/dal/savedFilter';
@@ -75,7 +76,7 @@ export const getFilterIDs = (json) => {
 
 export const uniqueNameErrorHandler = (e, res) => {
     const callback = (err) => err.validatorKey === 'not_unique' && err.path === 'title';
-    if (e.key === 'title.not_unique' || e.errors.some(callback)) {
+    if (e.key === 'title.not_unique' || e.errors?.some(callback)) {
         const err = e.errors ? e.errors.find(callback) : e;
         res.status(StatusCodes.UNPROCESSABLE_ENTITY).send({
             error: {
@@ -89,15 +90,34 @@ export const uniqueNameErrorHandler = (e, res) => {
 const getCount = (filter) =>
     sequelizeConnection
         .query(
-            'SELECT count(*) from saved_filters where keycloak_id = :keycloak_id and title = :title and type = :type',
+            'SELECT count(*) from saved_filters where keycloak_id = :keycloak_id and title = :title and type = :type and tag = :tag',
             {
-                replacements: { keycloak_id: filter.keycloak_id, title: filter.title, type: filter.type || 'filter' },
+                replacements: {
+                    keycloak_id: filter.keycloak_id,
+                    title: filter.title,
+                    type: filter.type || 'filter',
+                    tag: filter.tag,
+                },
                 type: QueryTypes.SELECT,
             },
         )
         .then((res) => res[0]['count']);
 
 export const handleUniqueName = async (filter) => {
+    if (!filter.title) {
+        throw new ValidationError('Title is missing', [
+            new ValidationErrorItem(
+                'Title missing',
+                'validation error',
+                'savedFilters',
+                'title is missing',
+                filter,
+                'savedFilter.title',
+                'hanldeUniqueName',
+                [],
+            ),
+        ]);
+    }
     const count = await getCount(filter);
     if (count > 0)
         throw {

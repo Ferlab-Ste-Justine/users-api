@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpError } from 'http-errors';
 import { getReasonPhrase, StatusCodes } from 'http-status-codes';
-import { BaseError, UniqueConstraintError } from 'sequelize';
+import { BaseError, UniqueConstraintError, ValidationError } from 'sequelize';
 
 export const globalErrorHandler = (err: unknown, _req: Request, res: Response, _next: NextFunction): void => {
     if (err instanceof UniqueConstraintError) {
@@ -11,6 +11,14 @@ export const globalErrorHandler = (err: unknown, _req: Request, res: Response, _
     } else if (err instanceof HttpError) {
         res.status(err.status).json({
             error: err.message,
+        });
+    } else if (err instanceof ValidationError) {
+        const error = {
+            name: 'Invalid data',
+            errors: err.errors.map((error) => error.message.replace('%s', error.path)),
+        };
+        res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+            error,
         });
     } else if (err instanceof Error || err instanceof BaseError) {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
