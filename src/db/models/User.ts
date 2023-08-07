@@ -1,9 +1,8 @@
 import { DataTypes, Model } from 'sequelize';
 import validator from 'validator';
 
-import { NAME_REGEX, UUID_VERSION } from '../../utils/constants';
+import { MAX_LENGTH_PER_ROLE, NAME_REGEX, UUID_VERSION } from '../../utils/constants';
 import sequelizeConnection from '../config';
-import isAlpha = validator.isAlpha;
 
 interface IUserAttributes {
     id: number;
@@ -132,14 +131,13 @@ UserModel.init(
         roles: {
             type: DataTypes.ARRAY(DataTypes.CITEXT),
             validate: {
-                isValid: function (value) {
-                    if (!value) return value;
-                    const values = Array.isArray(value) ? value : [value];
-                    values.forEach((val) => {
-                        if (!isAlpha(val)) {
-                            throw new Error('%s contains invalid values.');
-                        }
-                    });
+                isValid: function (roles) {
+                    const allAlphanumerical = (roles ?? []).every(
+                        (role) => validator.isAlphanumeric(role) && role.length <= MAX_LENGTH_PER_ROLE,
+                    );
+                    if (!allAlphanumerical) {
+                        throw new Error('%s contains invalid values.');
+                    }
                 },
             },
         },
