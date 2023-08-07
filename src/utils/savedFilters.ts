@@ -1,5 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
-import { QueryTypes } from 'sequelize';
+import { QueryTypes, ValidationError, ValidationErrorItem } from 'sequelize';
+import { ValidationErrorItemType } from 'sequelize/types/errors/validation-error';
 
 import sequelizeConnection from '../db/config';
 import { getById } from '../db/dal/savedFilter';
@@ -104,7 +105,18 @@ const getCount = (filter) =>
 
 export const handleUniqueName = async (filter) => {
     if (!filter.title) {
-        throw new Error('Title is missing');
+        throw new ValidationError('Title is missing', [
+            new ValidationErrorItem(
+                'Title missing',
+                'validation error',
+                'savedFilters',
+                'title is missing',
+                filter,
+                'savedFilter.title',
+                'hanldeUniqueName',
+                [],
+            ),
+        ]);
     }
     const count = await getCount(filter);
     if (count > 0)
