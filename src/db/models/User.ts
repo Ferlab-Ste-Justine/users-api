@@ -131,7 +131,7 @@ UserModel.init(
         roles: {
             type: DataTypes.ARRAY(DataTypes.CITEXT),
             validate: {
-                isValid: function (roles) {
+                validate: function (roles) {
                     const allAlphanumerical = (roles ?? []).every(
                         (role) => validator.isAlphanumeric(role) && role.length <= MAX_LENGTH_PER_ROLE,
                     );
