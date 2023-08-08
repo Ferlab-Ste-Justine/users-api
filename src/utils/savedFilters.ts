@@ -1,6 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
 import { QueryTypes, ValidationError, ValidationErrorItem } from 'sequelize';
-import { ValidationErrorItemType } from 'sequelize/types/errors/validation-error';
 
 import sequelizeConnection from '../db/config';
 import { getById } from '../db/dal/savedFilter';
@@ -8,10 +7,10 @@ import { getById } from '../db/dal/savedFilter';
 const removeFilterFromContent = (content, id) => {
     if (content)
         return content.map((obj) => {
-            if (obj.filterID !== id && obj.title && obj.id !== id) {
+            if (!obj.title && content.content) return removeFilterFromContent(obj.content, id);
+            if (obj.filterID !== id && obj.id !== id) {
                 return obj;
             }
-            if (content.content) return removeFilterFromContent(obj.content, id);
         });
 };
 
