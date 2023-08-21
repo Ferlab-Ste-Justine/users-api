@@ -92,5 +92,6 @@ SavedFilterModel.init(
 SavedFilterModel.beforeCreate(handleUniqueName);
 
 SavedFilterModel.beforeUpdate(handleUniqueName);
+SavedFilterModel.beforeSave(handleUniqueName);
 
 export default SavedFilterModel;
