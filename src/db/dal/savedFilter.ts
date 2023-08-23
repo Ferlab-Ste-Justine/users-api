@@ -56,6 +56,7 @@ export const update = async (
                 [Op.and]: [{ keycloak_id }, { id }],
             },
             returning: true,
+            individualHooks: true,
         },
     );
 
