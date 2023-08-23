@@ -80,7 +80,7 @@ export const uniqueNameErrorHandler = (e, res) => {
         res.status(StatusCodes.UNPROCESSABLE_ENTITY).send({
             error: {
                 message: err.message,
-                translationKey: `${err.instance.dataValues.type || 'filter'}.error.save.nameAlreadyExists`,
+                translationKey: `${err.instance?.dataValues.type || 'filter'}.error.save.nameAlreadyExists`,
             },
         });
     }
