@@ -100,7 +100,7 @@ const getCount = (filter) =>
                 type: QueryTypes.SELECT,
             },
         )
-        .then((res) => res[0]['count']);
+        .then((res) => Number(res[0]['count']));
 
 export const handleUniqueName = async (filter) => {
     if (!filter.title) {
