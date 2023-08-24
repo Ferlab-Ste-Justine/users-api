@@ -11,7 +11,13 @@ import {
     update,
     updateAsDefault,
 } from '../db/dal/savedFilter';
-import { getFilterIDs, removeQueryFromFilters, uniqueNameErrorHandler, updateQuery } from '../utils/savedFilters';
+import {
+    getFilterIDs,
+    handleUniqueName,
+    removeQueryFromFilters,
+    uniqueNameErrorHandler,
+    updateQuery,
+} from '../utils/savedFilters';
 
 // Handles requests made to /saved-filters
 const savedFiltersRouter = Router();
@@ -126,6 +132,17 @@ savedFiltersRouter.get('/withQueryId/:id', async (req: any, res) => {
         res.status(StatusCodes.OK).send(result);
     } catch (err) {
         console.error(err);
+    }
+});
+
+savedFiltersRouter.post('/validate-name', async (req: any, res: any, next) => {
+    try {
+        const keycloak_id = req['kauth']?.grant?.access_token?.content?.sub;
+        await handleUniqueName({ ...req.body, keycloak_id });
+        res.status(StatusCodes.OK).send({ valid: true });
+    } catch (err) {
+        uniqueNameErrorHandler(err, res);
+        next(err);
     }
 });
 
