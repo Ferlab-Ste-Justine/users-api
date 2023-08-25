@@ -87,23 +87,24 @@ export const uniqueNameErrorHandler = (e, res) => {
 };
 
 const getCount = (filter) => {
-    let query =
-        'SELECT count(*) from saved_filters where keycloak_id = :keycloak_id and title = :title and type = :type and tag = :tag';
     const replacements = {
         keycloak_id: filter.keycloak_id,
         title: filter.title,
         type: filter.type || 'filter',
         tag: filter.tag,
+        id: filter.id,
     };
-    if (filter.id) {
-        query += ' and id <> :id';
-        replacements['id'] = filter.id;
-    }
+
     return sequelizeConnection
-        .query(query, {
-            replacements,
-            type: QueryTypes.SELECT,
-        })
+        .query(
+            `SELECT count(*) from saved_filters where keycloak_id = :keycloak_id and title = :title and type = :type and tag = :tag ${
+                filter.id ? 'and id <> :id' : ''
+            }`,
+            {
+                replacements,
+                type: QueryTypes.SELECT,
+            },
+        )
         .then((res) => Number(res[0]['count']));
 };
 
