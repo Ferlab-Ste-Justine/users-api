@@ -86,21 +86,26 @@ export const uniqueNameErrorHandler = (e, res) => {
     }
 };
 
-const getCount = (filter) =>
-    sequelizeConnection
-        .query(
-            'SELECT count(*) from saved_filters where keycloak_id = :keycloak_id and title = :title and type = :type and tag = :tag',
-            {
-                replacements: {
-                    keycloak_id: filter.keycloak_id,
-                    title: filter.title,
-                    type: filter.type || 'filter',
-                    tag: filter.tag,
-                },
-                type: QueryTypes.SELECT,
-            },
-        )
-        .then((res) => res[0]['count']);
+const getCount = (filter) => {
+    let query =
+        'SELECT count(*) from saved_filters where keycloak_id = :keycloak_id and title = :title and type = :type and tag = :tag';
+    const replacements = {
+        keycloak_id: filter.keycloak_id,
+        title: filter.title,
+        type: filter.type || 'filter',
+        tag: filter.tag,
+    };
+    if (filter.id) {
+        query += ' and id <> :id';
+        replacements['id'] = filter.id;
+    }
+    return sequelizeConnection
+        .query(query, {
+            replacements,
+            type: QueryTypes.SELECT,
+        })
+        .then((res) => Number(res[0]['count']));
+};
 
 export const handleUniqueName = async (filter) => {
     if (!filter.title) {
