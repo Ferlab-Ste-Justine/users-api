@@ -39,14 +39,14 @@ export interface IUserInput extends IUserAttributes {}
 export interface IUserOuput extends IUserAttributes {}
 
 class UserModel extends Model<IUserAttributes, IUserInput> implements IUserAttributes {
-    public id!: number;
-    public keycloak_id!: string;
+    public id: number;
+    public keycloak_id: string;
     public commercial_use_reason: string;
     public accepted_terms: boolean;
     public understand_disclaimer: boolean;
     public completed_registration: boolean;
-    public creation_date!: Date;
-    public updated_date!: Date;
+    public creation_date: Date;
+    public updated_date: Date;
     public deleted: boolean;
     public roles: string[];
     public portal_usages: string[];
@@ -144,7 +144,7 @@ UserModel.init(
         affiliation: {
             type: DataTypes.CITEXT,
             validate: {
-                isAlphanumeric: true,
+                is: NAME_REGEX,
             },
         },
         public_email: {

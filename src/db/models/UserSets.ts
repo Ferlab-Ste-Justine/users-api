@@ -1,6 +1,6 @@
 import { DataTypes, Model } from 'sequelize';
 
-import { UUID_VERSION } from '../../utils/constants';
+import { NAME_REGEX, UUID_VERSION } from '../../utils/constants';
 import sequelizeConnection from '../config';
 
 interface IUserSetAttributes {
@@ -19,13 +19,13 @@ export interface IUserSetsInput extends IUserSetAttributes {}
 export interface IUserSetsOutput extends IUserSetAttributes {}
 
 class UserSetModel extends Model<IUserSetAttributes, IUserSetsInput> implements IUserSetAttributes {
-    public id!: string;
-    public keycloak_id!: string;
-    public content!: any;
-    public alias!: string;
-    public sharedpublicly!: boolean;
-    public creation_date!: Date;
-    public updated_date!: Date;
+    public id: string;
+    public keycloak_id: string;
+    public content: any;
+    public alias: string;
+    public sharedpublicly: boolean;
+    public creation_date: Date;
+    public updated_date: Date;
 }
 
 UserSetModel.init(
@@ -50,7 +50,7 @@ UserSetModel.init(
             type: DataTypes.STRING,
             allowNull: false,
             validate: {
-                isAlpha: true,
+                is: NAME_REGEX,
             },
         },
         sharedpublicly: {
