@@ -17,7 +17,7 @@
         "migrate": "node-pg-migrate",
         "dev": "nodemon",
         "start": "ts-node ./src/index.ts",
-        "start:prd": "node migrateUpWithWrapper.mjs && node ./dist/src/index.js",
+        "start:prd": "node fixSwitchIncludeFerlab.mjs && node migrateUpWithWrapper.mjs && node ./dist/src/index.js",
         "test": "jest --silent"
     },
     "dependencies": {

@@ -25,7 +25,7 @@ Then,
 # In a terminal (at the root of the project)
 docker-compose up OR docker compose up # Spins up the database 
 # In another terminal
-docker run --rm -it --network users-api_default -p "1212:1212" -v $PWD:/app --workdir /app node:16.13-alpine sh
+docker run --rm -it --network users-api_default -p "1212:1212" -v $PWD:/app --workdir /app node:18.8-alpine3.15 sh
 npm install # if needed
 npm run migrate up # if needed
 npm run dev
