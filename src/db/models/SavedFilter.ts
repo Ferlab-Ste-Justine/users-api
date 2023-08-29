@@ -22,15 +22,15 @@ export interface ISavedFilterInput extends ISavedFilterAttributes {}
 export interface ISavedFilterOutput extends ISavedFilterAttributes {}
 
 class SavedFilterModel extends Model<ISavedFilterAttributes, ISavedFilterInput> implements ISavedFilterAttributes {
-    public id!: string;
-    public keycloak_id!: string;
-    public title!: string;
-    public tag!: string;
-    public queries!: any[];
-    public type!: string;
-    public creation_date!: Date;
-    public updated_date!: Date;
-    public favorite!: boolean;
+    public id: string;
+    public keycloak_id: string;
+    public title: string;
+    public tag: string;
+    public queries: any[];
+    public type: string;
+    public creation_date: Date;
+    public updated_date: Date;
+    public favorite: boolean;
 }
 
 SavedFilterModel.init(
