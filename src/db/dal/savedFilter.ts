@@ -26,11 +26,19 @@ export const getById = async (id: string): Promise<ISavedFilterOutput> => {
     return filter;
 };
 
-export const getAll = async ({ keycloak_id, tag, type = 'filter' }): Promise<ISavedFilterOutput[]> => {
+export const getAll = async ({
+    keycloak_id,
+    tag,
+    type = 'filter',
+}: {
+    keycloak_id: string;
+    tag?: string;
+    type?: string;
+}): Promise<ISavedFilterOutput[]> => {
     const options = {
         where: tag ? { [Op.and]: [{ keycloak_id }, { tag }, { type }] } : [{ keycloak_id }, { type }],
     };
-    return await SavedFilterModel.findAll(options);
+    return SavedFilterModel.findAll(options);
 };
 
 export const create = async (keycloak_id: string, payload: ISavedFilterInput): Promise<ISavedFilterOutput> =>

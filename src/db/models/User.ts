@@ -1,7 +1,7 @@
 import { DataTypes, Model } from 'sequelize';
 import validator from 'validator';
 
-import { MAX_LENGTH_PER_ROLE, NAME_REGEX, UUID_VERSION } from '../../utils/constants';
+import { LINKEDIN_REGEX, MAX_LENGTH_PER_ROLE, NAME_REGEX, UUID_VERSION } from '../../utils/constants';
 import sequelizeConnection from '../config';
 
 interface IUserAttributes {
@@ -157,7 +157,7 @@ UserModel.init(
             type: DataTypes.TEXT,
             validate: {
                 isUrl: true,
-                is: /^https?:\/\/(www\.)?linkedin\.com\/in\//i,
+                is: LINKEDIN_REGEX,
             },
         },
         portal_usages: DataTypes.ARRAY(DataTypes.CITEXT),

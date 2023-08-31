@@ -35,8 +35,9 @@ savedFiltersRouter.get('/:id', async (req, res, next) => {
 savedFiltersRouter.get('/', async (req, res, next) => {
     try {
         const keycloak_id = req['kauth']?.grant?.access_token?.content?.sub;
-        const results: any = await getAll({ keycloak_id, type: req.query.type } as any);
-        if (req.query.type === 'filter' || !req.query.type) {
+        const type = req.query?.type as string;
+        const results = await getAll({ keycloak_id, type });
+        if (type === 'filter' || !type) {
             const updatedResults = [];
             for (let i = 0; i < results.length; i++) {
                 const result = results[i];
@@ -55,8 +56,9 @@ savedFiltersRouter.get('/', async (req, res, next) => {
 savedFiltersRouter.get('/tag/:tagid', async (req, res, next) => {
     try {
         const keycloak_id = req['kauth']?.grant?.access_token?.content?.sub;
-        const type = req.query.type || 'filter';
-        const result = await getAll({ keycloak_id, tagid: req.params.tagid, type } as any);
+        const type = req.query?.type as string;
+        const tag = req.params?.tagid;
+        const result = await getAll({ keycloak_id, tag, type });
         res.status(StatusCodes.OK).send(result);
     } catch (e) {
         next(e);
