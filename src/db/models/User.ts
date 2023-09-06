@@ -131,11 +131,11 @@ UserModel.init(
         roles: {
             type: DataTypes.ARRAY(DataTypes.CITEXT),
             validate: {
-                validate: function (roles) {
-                    const allAlphanumerical = (roles ?? []).every(
-                        (role) => validator.isAlphanumeric(role) && role.length <= MAX_LENGTH_PER_ROLE,
+                validate: (roles: string[]) => {
+                    const rolesOK = (roles ?? []).every(
+                        (role) => NAME_REGEX.test(role) && role.length <= MAX_LENGTH_PER_ROLE,
                     );
-                    if (!allAlphanumerical) {
+                    if (!rolesOK) {
                         throw new Error('%s contains invalid values.');
                     }
                 },
