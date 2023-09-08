@@ -18,4 +18,5 @@ deploy {
     health_check_path = "/status"
     dependencies = "ecr"
     add_cloudfront = "1"
+    cache_policy = "CachingDisabled"
 }
