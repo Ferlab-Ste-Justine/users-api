@@ -10,7 +10,6 @@ import {
     getProfileImageUploadPresignedUrl,
     getUserById,
     searchUsers,
-    updateRolesAndDataUsages,
     updateUser,
 } from '../db/dal/user';
 import { getUserValidator } from '../utils/userValidator';
@@ -129,16 +128,6 @@ usersRouter.delete('/', async (req, res, next) => {
     try {
         const keycloak_id = req['kauth']?.grant?.access_token?.content?.sub;
         await deleteUser(keycloak_id);
-        res.status(StatusCodes.OK).send({ success: true });
-    } catch (e) {
-        next(e);
-    }
-});
-
-//todo: delete it after INCLUDE roles and data usages migration SJIP-340
-usersRouter.put('/updateRolesAndDataUsages', async (req, res, next) => {
-    try {
-        await updateRolesAndDataUsages();
         res.status(StatusCodes.OK).send({ success: true });
     } catch (e) {
         next(e);
