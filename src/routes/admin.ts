@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-import { deleteUser, resetConsents } from '../db/dal/user';
+import { deleteUser, resetAllConsents } from '../db/dal/user';
 
 // Handles requests made to /admin
 const adminRouter = Router();
@@ -16,9 +16,9 @@ adminRouter.delete('/deleteUser/:id', async (req, res, next) => {
     }
 });
 
-adminRouter.put('/resetConsents', async (req, res, next) => {
+adminRouter.put('/resetAllConsents', async (req, res, next) => {
     try {
-        const numberOfRowsUpdated = await resetConsents();
+        const numberOfRowsUpdated = await resetAllConsents();
         res.status(StatusCodes.OK).send({ updated: numberOfRowsUpdated });
     } catch (e) {
         next(e);

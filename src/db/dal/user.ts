@@ -257,7 +257,7 @@ export const completeRegistration = async (
     return results[1][0];
 };
 
-export const resetConsents = async (): Promise<number> => {
+export const resetAllConsents = async (): Promise<number> => {
     const result = await UserModel.update(
         {
             accepted_terms: false,
