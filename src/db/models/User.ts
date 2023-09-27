@@ -1,5 +1,4 @@
 import { DataTypes, Model } from 'sequelize';
-import validator from 'validator';
 
 import { LINKEDIN_REGEX, MAX_LENGTH_PER_ROLE, NAME_REGEX, UUID_VERSION } from '../../utils/constants';
 import sequelizeConnection from '../config';
