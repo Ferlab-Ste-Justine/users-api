@@ -106,7 +106,9 @@ UserModel.init(
         commercial_use_reason: {
             type: DataTypes.STRING,
             allowNull: true,
-            validate: { validate: (value: string) => (value ? NAME_REGEX.test(value) : true) },
+            validate: {
+                validate: (value: string) => value === '' || NAME_REGEX.test(value),
+            },
         },
         email: {
             type: DataTypes.STRING,
@@ -142,7 +144,9 @@ UserModel.init(
         affiliation: {
             type: DataTypes.CITEXT,
             allowNull: true,
-            validate: { validate: (value: string) => (value ? NAME_REGEX.test(value) : true) },
+            validate: {
+                validate: (value: string) => value === '' || NAME_REGEX.test(value),
+            },
         },
         public_email: {
             type: DataTypes.TEXT,
