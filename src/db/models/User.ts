@@ -119,7 +119,7 @@ UserModel.init(
         external_individual_fullname: {
             type: DataTypes.TEXT,
             validate: {
-                isAlpha: true,
+                is: NAME_REGEX,
             },
         },
         external_individual_email: {
