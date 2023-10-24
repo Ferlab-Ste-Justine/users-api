@@ -10,7 +10,7 @@ const sanitizeInputPayload = (payload: IUserSetsInput) => {
     return rest;
 };
 
-export const getById = async (keycloak_id: string, id: string): Promise<IUserSetsOutput> => {
+export const getByIdAndKeycloakId = async (keycloak_id: string, id: string): Promise<IUserSetsOutput> => {
     const filter = await UserSetModel.findOne({
         where: {
             [Op.and]: [{ keycloak_id }, { id }],
@@ -18,7 +18,21 @@ export const getById = async (keycloak_id: string, id: string): Promise<IUserSet
     });
 
     if (!filter) {
-        throw createHttpError(StatusCodes.NOT_FOUND, `Saved filter #${id} does not exist.`);
+        throw createHttpError(StatusCodes.NOT_FOUND, `User Set #${id} does not exist for User #${keycloak_id}`);
+    }
+
+    return filter;
+};
+
+export const getById = async (id: string): Promise<IUserSetsOutput> => {
+    const filter = await UserSetModel.findOne({
+        where: {
+            id,
+        },
+    });
+
+    if (!filter) {
+        throw createHttpError(StatusCodes.NOT_FOUND, `User Set #${id} does not exist.`);
     }
 
     return filter;
