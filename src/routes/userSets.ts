@@ -1,14 +1,14 @@
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-import { create, destroy, getAll, getById, getByIdAndKeycloakId, update } from '../db/dal/userSets';
+import { create, destroy, getAll, getById, getByIdAndShared, share, update } from '../db/dal/userSets';
 
 const userSetsRouter = Router();
 
 userSetsRouter.get('/:id', async (req, res, next) => {
     try {
         const keycloak_id = req['kauth']?.grant?.access_token?.content?.sub;
-        const result = await getByIdAndKeycloakId(keycloak_id, req.params.id);
+        const result = await getById(keycloak_id, req.params.id);
         res.status(StatusCodes.OK).send(result);
     } catch (e) {
         next(e);
@@ -57,7 +57,17 @@ userSetsRouter.delete('/:id', async (req, res, next) => {
 
 userSetsRouter.get('/shared/:id', async (req, res, next) => {
     try {
-        const result = await getById(req.params.id);
+        const result = await getByIdAndShared(req.params.id);
+        res.status(StatusCodes.OK).send(result);
+    } catch (e) {
+        next(e);
+    }
+});
+
+userSetsRouter.put('/shared/:id', async (req, res, next) => {
+    try {
+        const keycloak_id = req['kauth']?.grant?.access_token?.content?.sub;
+        const result = await share(req.params.id, keycloak_id);
         res.status(StatusCodes.OK).send(result);
     } catch (e) {
         next(e);

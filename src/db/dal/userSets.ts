@@ -10,7 +10,7 @@ const sanitizeInputPayload = (payload: IUserSetsInput) => {
     return rest;
 };
 
-export const getByIdAndKeycloakId = async (keycloak_id: string, id: string): Promise<IUserSetsOutput> => {
+export const getById = async (keycloak_id: string, id: string): Promise<IUserSetsOutput> => {
     const filter = await UserSetModel.findOne({
         where: {
             [Op.and]: [{ keycloak_id }, { id }],
@@ -18,16 +18,17 @@ export const getByIdAndKeycloakId = async (keycloak_id: string, id: string): Pro
     });
 
     if (!filter) {
-        throw createHttpError(StatusCodes.NOT_FOUND, `User Set #${id} does not exist for User #${keycloak_id}`);
+        throw createHttpError(StatusCodes.NOT_FOUND, `User Set #${id} does not exist`);
     }
 
     return filter;
 };
 
-export const getById = async (id: string): Promise<IUserSetsOutput> => {
+export const getByIdAndShared = async (id: string): Promise<IUserSetsOutput> => {
     const filter = await UserSetModel.findOne({
         where: {
             id,
+            sharedpublicly: true,
         },
     });
 
@@ -73,4 +74,20 @@ export const destroy = async (keycloak_id: string, id: string): Promise<boolean>
         where: { [Op.and]: [{ keycloak_id }, { id }] },
     });
     return !!deletedCount;
+};
+
+export const share = async (id: string, keycloak_id: string): Promise<boolean> => {
+    const updatedCount = await UserSetModel.update(
+        {
+            sharedpublicly: true,
+            updated_date: new Date(),
+        },
+        {
+            where: {
+                [Op.and]: [{ keycloak_id }, { id }],
+            },
+        },
+    );
+
+    return !!updatedCount;
 };
