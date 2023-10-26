@@ -88,5 +88,5 @@ export const share = async (id: string, keycloak_id: string): Promise<boolean> =
         },
     );
 
-    return !!updatedCount;
+    return !!updatedCount[0];
 };
