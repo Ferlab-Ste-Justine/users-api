@@ -27,8 +27,7 @@ export const getById = async (keycloak_id: string, id: string): Promise<IUserSet
 export const getByIdAndShared = async (id: string): Promise<IUserSetsOutput> => {
     const filter = await UserSetModel.findOne({
         where: {
-            id,
-            sharedpublicly: true,
+            [Op.and]: [{ id }, { sharedpublicly: true }],
         },
     });
 
