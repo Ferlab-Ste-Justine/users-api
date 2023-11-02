@@ -160,7 +160,7 @@ describe('Validate filters handle query pills', () => {
             const query = { content: [{ filterID: '0a1292c2-0bab-4190-a8d1-6db6e125af8a' }] };
             const updatedQuery = await updateQuery(query);
             expect(updatedQuery).toEqual({
-                content: [{ content: 'abcde', title: 'fghijklm', filterID: '0a1292c2-0bab-4190-a8d1-6db6e125af8a' }],
+                content: [{ content: 'abcde', title: 'fghijklm', id: '0a1292c2-0bab-4190-a8d1-6db6e125af8a' }],
             });
         });
 
