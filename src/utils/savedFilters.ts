@@ -35,7 +35,7 @@ const updateContent = async (content) => {
     if (content.filterID) {
         const { query, title } = await getPillContent(content.filterID);
         query.title = title;
-        query.filterID = content.filterID;
+        query.id = content.filterID;
         return query;
     }
     return content;
