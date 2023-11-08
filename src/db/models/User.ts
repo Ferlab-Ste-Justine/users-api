@@ -49,6 +49,8 @@ class UserModel extends Model<IUserAttributes, IUserInput> implements IUserAttri
     public deleted: boolean;
     public roles: string[];
     public portal_usages: string[];
+    public public_email?: string;
+    public external_individual_email?: string;
 }
 
 UserModel.init(
@@ -124,9 +126,8 @@ UserModel.init(
         },
         external_individual_email: {
             type: DataTypes.TEXT,
-            validate: {
-                isEmail: true,
-            },
+            allowNull: true,
+            validate: { isEmail: true },
         },
         roles: {
             type: DataTypes.ARRAY(DataTypes.CITEXT),
@@ -150,9 +151,8 @@ UserModel.init(
         },
         public_email: {
             type: DataTypes.TEXT,
-            validate: {
-                isEmail: true,
-            },
+            allowNull: true,
+            validate: { isEmail: true },
         },
         linkedin: {
             type: DataTypes.TEXT,
@@ -210,7 +210,17 @@ UserModel.init(
             defaultValue: {},
         },
     },
-    { sequelize: sequelizeConnection, modelName: 'users', timestamps: false },
+    {
+        sequelize: sequelizeConnection,
+        modelName: 'users',
+        timestamps: false,
+        hooks: {
+            beforeValidate: (instance) => {
+                instance.public_email = instance.public_email || null;
+                instance.external_individual_email = instance.external_individual_email || null;
+            },
+        },
+    },
 );
 
 export default UserModel;
