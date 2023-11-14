@@ -97,9 +97,12 @@ const getCount = (filter) => {
 
     return sequelizeConnection
         .query(
-            `SELECT count(*) from saved_filters where keycloak_id = :keycloak_id and title = :title and type = :type and tag = :tag ${
-                filter.id ? 'and id <> :id' : ''
-            }`,
+            `SELECT count(*)
+             from saved_filters
+             where keycloak_id = :keycloak_id
+               and title = :title
+               and type = :type
+               and tag = :tag ${filter.id ? 'and id <> :id' : ''}`,
             {
                 replacements,
                 type: QueryTypes.SELECT,
@@ -133,3 +136,15 @@ export const handleUniqueName = async (filter) => {
             },
         };
 };
+
+export const formatByTag = (queries) =>
+    queries.reduce((acc, query) => {
+        const { tag, ...rest } = query;
+
+        if (!acc[tag]) {
+            acc[tag] = [];
+        }
+
+        acc[tag].push(rest.dataValues);
+        return acc;
+    }, {});

@@ -12,6 +12,7 @@ import {
     updateAsDefault,
 } from '../db/dal/savedFilter';
 import {
+    formatByTag,
     getFilterIDs,
     handleUniqueName,
     removeQueryFromFilters,
@@ -46,7 +47,7 @@ savedFiltersRouter.get('/', async (req, res, next) => {
             }
             res.status(StatusCodes.OK).send(updatedResults);
         } else {
-            res.status(StatusCodes.OK).send(results);
+            res.status(StatusCodes.OK).send(formatByTag(results));
         }
     } catch (e) {
         next(e);
