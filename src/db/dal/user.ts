@@ -273,3 +273,18 @@ export const resetAllConsents = async (): Promise<number> => {
 
     return result[0];
 };
+
+export const retrieveUserCreatedSince = async (date: string): Promise<number> => {
+    const result = await UserModel.count({
+        where: {
+            [Op.and]: {
+                completed_registration: true,
+                deleted: false,
+                creation_date: {
+                    [Op.gte]: new Date(date),
+                },
+            },
+        },
+    });
+    return result;
+};
