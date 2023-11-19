@@ -31,7 +31,7 @@
         "http-errors": "^1.7.2",
         "http-status-codes": "^2.1.4",
         "joi": "^17.9.2",
-        "keycloak-connect": "^15.0.2",
+        "keycloak-connect": "^22.0.5",
         "node-pg-migrate": "^6.0.0",
         "pg": "^8.7.1",
         "sequelize": "^6.28.2",
