@@ -95,9 +95,6 @@ UserModel.init(
         },
         era_commons_id: {
             type: DataTypes.STRING,
-            validate: {
-                isAlpha: true,
-            },
         },
         nih_ned_id: {
             type: DataTypes.STRING,
