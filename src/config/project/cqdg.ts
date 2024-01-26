@@ -17,6 +17,7 @@ const cleanedUserAttributes = [
     'affiliation',
     'profile_image_key',
     'research_domains',
+    'locale'
 ];
 
 export const roleOptions = [
