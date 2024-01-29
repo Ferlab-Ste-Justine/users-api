@@ -208,7 +208,7 @@ UserModel.init(
             defaultValue: {},
         },
         locale: {
-            type: DataTypes.STRING(),
+            type: DataTypes.ENUM("en", "fr"),
             validate: {
                 isAlpha: true,
             },
