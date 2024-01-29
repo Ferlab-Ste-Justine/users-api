@@ -30,6 +30,7 @@ interface IUserAttributes {
     completed_registration: boolean;
     deleted: boolean;
     config?: any;
+    locale?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -205,6 +206,12 @@ UserModel.init(
             type: DataTypes.JSONB,
             allowNull: false,
             defaultValue: {},
+        },
+        locale: {
+            type: DataTypes.ENUM("en", "fr"),
+            validate: {
+                isAlpha: true,
+            },
         },
     },
     {
