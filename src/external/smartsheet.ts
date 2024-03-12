@@ -1,5 +1,6 @@
 import createHttpError from 'http-errors';
 import { StatusCodes } from 'http-status-codes';
+import fetch from 'node-fetch';
 
 import { smartsheetId, smartsheetToken } from '../config/env';
 import config from '../config/project';
@@ -37,7 +38,7 @@ export const handleNewsletterUpdate = async (user: IUserOuput): Promise<string> 
 };
 
 export const subscribeNewsletter = async (user: IUserOuput): Promise<string> => {
-    const row = formatRow(user);
+    const row = await formatRow(user);
 
     const response = await fetch(`https://api.smartsheet.com/2.0/sheets/${smartsheetId}/rows`, {
         method: 'POST',
@@ -45,7 +46,7 @@ export const subscribeNewsletter = async (user: IUserOuput): Promise<string> => 
             Authorization: `Bearer ${smartsheetToken}`,
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(row),
+        body: row,
     });
 
     return response.status === 200 ? SubscriptionStatus.SUBSCRIBED : SubscriptionStatus.FAILED;
@@ -103,11 +104,11 @@ export const formatRow = async (user: IUserOuput): Promise<string> => {
 
                     return mappedKey === 'roles'
                         ? {
-                              columnId: column.columnId,
+                              columnId: column.id,
                               value: user[mappedKey] ? parseRoles(user[mappedKey]) : '',
                           }
                         : {
-                              columnId: column.columnId,
+                              columnId: column.id,
                               value: user[mappedKey] || '',
                           };
                 }),

@@ -6,7 +6,7 @@ import { uuid } from 'uuidv4';
 
 import { keycloakRealm, profileImageBucket } from '../../config/env';
 import config from '../../config/project';
-import { getNewsletterHandler, SubscriptionStatus } from '../../utils/newsletter';
+import { getNewsletterHandler } from '../../utils/newsletter';
 import { UserValidator } from '../../utils/userValidator';
 import UserModel, { IUserInput, IUserOuput } from '../models/User';
 
@@ -263,18 +263,13 @@ export const completeRegistration = async (
 };
 
 export const updateNewsletterStatus = async (user: IUserOuput): Promise<IUserOuput> => {
-    try {
-        const newsletterHandler = getNewsletterHandler(keycloakRealm);
+    const newsletterHandler = getNewsletterHandler(keycloakRealm);
 
-        if (newsletterHandler) {
-            await newsletterHandler(user);
-        } else {
-            return user;
-        }
-    } catch {
-        const failedResults = await UserModel.update(
+    if (newsletterHandler) {
+        const newsletterStatus = await newsletterHandler(user);
+        const updatedUser = await UserModel.update(
             {
-                newsletter_subscription_status: SubscriptionStatus.FAILED,
+                newsletter_subscription_status: newsletterStatus,
             },
             {
                 where: {
@@ -284,8 +279,9 @@ export const updateNewsletterStatus = async (user: IUserOuput): Promise<IUserOup
             },
         );
 
-        return failedResults[1][0];
+        return updatedUser[1][0];
     }
+
     return user;
 };
 
