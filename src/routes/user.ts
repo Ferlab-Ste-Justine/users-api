@@ -12,6 +12,7 @@ import {
     searchUsers,
     updateUser,
 } from '../db/dal/user';
+import { subscribeNewsletter, unsubscribeNewsletter } from '../external/smartsheet';
 import { getUserValidator } from '../utils/userValidator';
 
 // Handles requests made to /users
@@ -118,6 +119,24 @@ usersRouter.put('/complete-registration', async (req, res, next) => {
     try {
         const keycloak_id = req['kauth']?.grant?.access_token?.content?.sub;
         const result = await completeRegistration(keycloak_id, req.body, getUserValidator(keycloakRealm));
+        res.status(StatusCodes.OK).send(result);
+    } catch (e) {
+        next(e);
+    }
+});
+
+usersRouter.post('/sub', async (req, res, next) => {
+    try {
+        const result = await subscribeNewsletter(req.body);
+        res.status(StatusCodes.OK).send(result);
+    } catch (e) {
+        next(e);
+    }
+});
+
+usersRouter.post('/unsub', async (req, res, next) => {
+    try {
+        const result = await unsubscribeNewsletter(req.body.newsletter_email);
         res.status(StatusCodes.OK).send(result);
     } catch (e) {
         next(e);

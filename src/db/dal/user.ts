@@ -4,8 +4,10 @@ import { StatusCodes } from 'http-status-codes';
 import { Op, Order } from 'sequelize';
 import { uuid } from 'uuidv4';
 
-import { profileImageBucket } from '../../config/env';
+import { keycloakRealm, profileImageBucket } from '../../config/env';
 import config from '../../config/project';
+import Realm from '../../config/realm';
+import { handleNewsletterUpdate, subscribeNewsletter } from '../../external/smartsheet';
 import { UserValidator } from '../../utils/userValidator';
 import UserModel, { IUserInput, IUserOuput } from '../models/User';
 
@@ -201,7 +203,29 @@ export const updateUser = async (keycloak_id: string, payload: IUserInput): Prom
         },
     );
 
-    return results[1][0];
+    const updatedUser: IUserOuput = results[1][0];
+
+    if (updatedUser.newsletter_email && keycloakRealm === Realm.INCLUDE) {
+        try {
+            await handleNewsletterUpdate(results[1][0]);
+        } catch {
+            const failedResults = await UserModel.update(
+                {
+                    newsletter_subscription_status: 'failed',
+                },
+                {
+                    where: {
+                        keycloak_id,
+                    },
+                    returning: true,
+                },
+            );
+
+            return failedResults[1][0];
+        }
+    }
+
+    return updatedUser;
 };
 
 export const deleteUser = async (keycloak_id: string): Promise<void> => {
@@ -253,6 +277,26 @@ export const completeRegistration = async (
             returning: true,
         },
     );
+
+    if ((results[1][0] as IUserOuput).newsletter_email && keycloakRealm === Realm.INCLUDE) {
+        try {
+            await subscribeNewsletter(results[1][0]);
+        } catch {
+            const failedResults = await UserModel.update(
+                {
+                    newsletter_subscription_status: 'failed',
+                },
+                {
+                    where: {
+                        keycloak_id,
+                    },
+                    returning: true,
+                },
+            );
+
+            return failedResults[1][0];
+        }
+    }
 
     return results[1][0];
 };

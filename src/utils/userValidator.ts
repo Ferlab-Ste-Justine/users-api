@@ -27,3 +27,14 @@ export const getUserValidator = (realm: string): UserValidator => {
             return defaultUserValidator;
     }
 };
+
+export const handleNewsletterSub = (realm: string): UserValidator => {
+    switch (realm) {
+        case Realm.INCLUDE:
+            return includeUserValidator;
+        case Realm.CQDG:
+            return cqdgUserValidator;
+        default:
+            return defaultUserValidator;
+    }
+};

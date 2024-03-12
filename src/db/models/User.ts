@@ -31,6 +31,8 @@ interface IUserAttributes {
     deleted: boolean;
     config?: any;
     locale?: string;
+    newsletter_email?: string;
+    newsletter_subscription_status?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -208,7 +210,18 @@ UserModel.init(
             defaultValue: {},
         },
         locale: {
-            type: DataTypes.ENUM("en", "fr"),
+            type: DataTypes.ENUM('en', 'fr'),
+            validate: {
+                isAlpha: true,
+            },
+        },
+        newsletter_email: {
+            type: DataTypes.TEXT,
+            allowNull: true,
+            validate: { isEmail: true },
+        },
+        newsletter_subscription_status: {
+            type: DataTypes.ENUM('subscribed', 'unsubscribed', 'failed'),
             validate: {
                 isAlpha: true,
             },
