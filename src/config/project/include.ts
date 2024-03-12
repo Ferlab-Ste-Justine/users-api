@@ -20,6 +20,7 @@ const cleanedUserAttributes = [
     'research_area_description',
     'locale',
     'newsletter_email',
+    'newsletter_subscription_status',
 ];
 
 const roleOptions = [
