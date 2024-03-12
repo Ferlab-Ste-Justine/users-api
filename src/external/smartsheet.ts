@@ -9,131 +9,110 @@ import { SubscriptionStatus } from '../utils/newsletter';
 const parseRoles = (roles: string[]) =>
     roles.map((role) => config.roleOptions.find((option) => option.value === role)?.label || role).join(', ');
 
-export const handleNewsletterUpdate = async (user: IUserOuput): Promise<void> => {
-    switch (user.newsletter_subscription_status) {
-        case SubscriptionStatus.SUBSCRIBED:
-            await subscribeNewsletter(user);
-            break;
-        case SubscriptionStatus.UNSUBSCRIBED:
-            await unsubscribeNewsletter(user.newsletter_email);
-            break;
-        default:
-            break;
-    }
+const ColumnMappings = {
+    'First Name': 'first_name',
+    'Last Name': 'last_name',
+    'Professional Title': 'roles',
+    Organization: 'affiliation',
+    Email: 'newsletter_email',
 };
 
-export const subscribeNewsletter = async (user: IUserOuput): Promise<any> => {
-    const url = `https://api.smartsheet.com/2.0/sheets/${smartsheetId}/rows`;
-    const headers = {
-        Authorization: `Bearer ${smartsheetToken}`,
-        'Content-Type': 'application/json',
-    };
-
-    const { newsletter_email, first_name, last_name, roles, affiliation } = user;
-
-    if (!newsletter_email) {
-        throw createHttpError(
-            StatusCodes.BAD_REQUEST,
-            'Some required fields are missing to complete newsletter subscription',
-        );
-    }
-
-    const { results } = await fetchSubscription(newsletter_email);
-
-    if (results.length > 0) return;
-
-    const body = [
-        {
-            toTop: true,
-            cells: [
-                {
-                    columnId: 2634539247921028,
-                    value: first_name || '',
-                },
-                {
-                    columnId: 7138138875291524,
-                    value: last_name || '',
-                },
-                {
-                    columnId: 1508639341078404,
-                    value: parseRoles(roles),
-                },
-                {
-                    columnId: 4733421045999492,
-                    value: affiliation || '',
-                },
-                {
-                    columnId: 1565260968683396,
-                    value: newsletter_email,
-                },
-            ],
-        },
-    ];
-
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify(body),
-    });
-
-    const parsedResponse = await response.json();
-
-    if (response.status === 200) {
-        return parsedResponse;
-    }
-
-    throw createHttpError(response.status, parsedResponse);
-};
-
-export const unsubscribeNewsletter = async (newsletter_email: string): Promise<any[]> => {
-    if (!newsletter_email) {
+export const handleNewsletterUpdate = async (user: IUserOuput): Promise<string> => {
+    if (!user.newsletter_email) {
         throw createHttpError(
             StatusCodes.BAD_REQUEST,
             'Some required fields are missing to remove newsletter subscription',
         );
     }
 
-    const { results } = await fetchSubscription(newsletter_email);
+    const rowId = await fetchSubscription(user.newsletter_email);
 
-    if (results.length === 0) {
-        throw createHttpError(StatusCodes.NOT_FOUND, `No newsletter subscription found for ${newsletter_email}`);
+    if (user.newsletter_subscription_status === SubscriptionStatus.SUBSCRIBED && !rowId) {
+        return subscribeNewsletter(user);
+    } else if (user.newsletter_subscription_status === SubscriptionStatus.UNSUBSCRIBED) {
+        return unsubscribeNewsletter(rowId);
     }
 
-    const urls = results.map((row) => `https://api.smartsheet.com/2.0/sheets/${smartsheetId}/rows?ids=${row.objectId}`);
-    const headers = {
-        Authorization: `Bearer ${smartsheetToken}`,
-        'Content-Type': 'application/json',
-    };
+    return user.newsletter_subscription_status;
+};
 
-    const responses = await Promise.all(
-        urls.map((url) =>
-            fetch(url, {
-                method: 'DELETE',
-                headers: headers,
-            }),
-        ),
-    );
+export const subscribeNewsletter = async (user: IUserOuput): Promise<string> => {
+    const row = formatRow(user);
 
-    return responses;
+    const response = await fetch(`https://api.smartsheet.com/2.0/sheets/${smartsheetId}/rows`, {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${smartsheetToken}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(row),
+    });
+
+    return response.status === 200 ? SubscriptionStatus.SUBSCRIBED : SubscriptionStatus.FAILED;
+};
+
+export const unsubscribeNewsletter = async (rowId: string): Promise<string> => {
+    const response = await fetch(`https://api.smartsheet.com/2.0/sheets/${smartsheetId}/rows?ids=${rowId}`, {
+        method: 'DELETE',
+        headers: {
+            Authorization: `Bearer ${smartsheetToken}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    return response.status === 200 ? SubscriptionStatus.UNSUBSCRIBED : SubscriptionStatus.FAILED;
 };
 
 export const fetchSubscription = async (newsletter_email: string): Promise<any> => {
-    const url = `https://api.smartsheet.com/2.0/search/sheets/${smartsheetId}?query=${newsletter_email}`;
-    const headers = {
-        Authorization: `Bearer ${smartsheetToken}`,
-        'Content-Type': 'application/json',
-    };
+    const response = await fetch(
+        `https://api.smartsheet.com/2.0/search/sheets/${smartsheetId}?query=${newsletter_email}`,
+        {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${smartsheetToken}`,
+                'Content-Type': 'application/json',
+            },
+        },
+    );
 
-    const response = await fetch(url, {
+    const parsedResponse = await response.json();
+
+    // TODO: Throw maybe? Because if not, it can be problematic. i.e the call fail but subscribe thinks its a good thing
+    return response.status === 200 ? parsedResponse.results?.[0]?.objectId || undefined : undefined;
+};
+
+export const formatRow = async (user: IUserOuput): Promise<string> => {
+    const response = await fetch(`https://api.smartsheet.com/2.0/sheets/${smartsheetId}`, {
         method: 'GET',
-        headers: headers,
+        headers: {
+            Authorization: `Bearer ${smartsheetToken}`,
+            'Content-Type': 'application/json',
+        },
     });
 
     const parsedResponse = await response.json();
 
-    if (response.status === 200) {
-        return parsedResponse;
-    }
+    // TODO handle if call failed or else it will try to filter on undef
+    const row = [
+        {
+            toTop: true,
+            cells: parsedResponse.columns
+                .filter((column) => ColumnMappings[column.title] !== undefined)
+                .map((column) => {
+                    const mappedKey = ColumnMappings[column.title];
 
-    throw createHttpError(response.status, parsedResponse);
+                    return mappedKey === 'roles'
+                        ? {
+                              columnId: column.columnId,
+                              value: user[mappedKey] ? parseRoles(user[mappedKey]) : '',
+                          }
+                        : {
+                              columnId: column.columnId,
+                              value: user[mappedKey] || '',
+                          };
+                }),
+        },
+    ];
+
+    return response.status === 200 ? JSON.stringify(row) : undefined;
 };

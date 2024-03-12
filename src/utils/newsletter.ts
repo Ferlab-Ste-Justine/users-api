@@ -9,7 +9,7 @@ export const SubscriptionStatus = {
 };
 
 export interface NewsletterHandler {
-    (payload: IUserOuput): Promise<void>;
+    (payload: IUserOuput): Promise<string>;
 }
 
 export const getNewsletterHandler = (realm: string): NewsletterHandler => {
