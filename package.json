@@ -33,7 +33,6 @@
         "joi": "^17.9.2",
         "keycloak-connect": "^22.0.5",
         "node-pg-migrate": "^6.0.0",
-        "node-fetch": "^2.6.1",
         "pg": "^8.7.1",
         "sequelize": "^6.28.2",
         "uuidv4": "^6.2.13"

@@ -1,6 +1,7 @@
 import { DataTypes, Model } from 'sequelize';
 
 import { LINKEDIN_REGEX, MAX_LENGTH_PER_ROLE, NAME_REGEX, UUID_VERSION } from '../../utils/constants';
+import { SubscriptionStatus } from '../../utils/newsletter';
 import sequelizeConnection from '../config';
 
 interface IUserAttributes {
@@ -221,7 +222,11 @@ UserModel.init(
             validate: { isEmail: true },
         },
         newsletter_subscription_status: {
-            type: DataTypes.ENUM('subscribed', 'unsubscribed', 'failed'),
+            type: DataTypes.ENUM(
+                SubscriptionStatus.SUBSCRIBED,
+                SubscriptionStatus.UNSUBSCRIBED,
+                SubscriptionStatus.FAILED,
+            ),
             validate: {
                 isAlpha: true,
             },

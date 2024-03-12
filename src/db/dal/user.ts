@@ -6,8 +6,7 @@ import { uuid } from 'uuidv4';
 
 import { keycloakRealm, profileImageBucket } from '../../config/env';
 import config from '../../config/project';
-import Realm from '../../config/realm';
-import { handleNewsletterUpdate, subscribeNewsletter } from '../../external/smartsheet';
+import { getNewsletterHandler, SubscriptionStatus } from '../../utils/newsletter';
 import { UserValidator } from '../../utils/userValidator';
 import UserModel, { IUserInput, IUserOuput } from '../models/User';
 
@@ -205,27 +204,7 @@ export const updateUser = async (keycloak_id: string, payload: IUserInput): Prom
 
     const updatedUser: IUserOuput = results[1][0];
 
-    if (updatedUser.newsletter_email && keycloakRealm === Realm.INCLUDE) {
-        try {
-            await handleNewsletterUpdate(results[1][0]);
-        } catch {
-            const failedResults = await UserModel.update(
-                {
-                    newsletter_subscription_status: 'failed',
-                },
-                {
-                    where: {
-                        keycloak_id,
-                    },
-                    returning: true,
-                },
-            );
-
-            return failedResults[1][0];
-        }
-    }
-
-    return updatedUser;
+    return updateNewsletterStatus(updatedUser);
 };
 
 export const deleteUser = async (keycloak_id: string): Promise<void> => {
@@ -278,27 +257,36 @@ export const completeRegistration = async (
         },
     );
 
-    if ((results[1][0] as IUserOuput).newsletter_email && keycloakRealm === Realm.INCLUDE) {
-        try {
-            await subscribeNewsletter(results[1][0]);
-        } catch {
-            const failedResults = await UserModel.update(
-                {
-                    newsletter_subscription_status: 'failed',
-                },
-                {
-                    where: {
-                        keycloak_id,
-                    },
-                    returning: true,
-                },
-            );
+    const updatedUser: IUserOuput = results[1][0];
 
-            return failedResults[1][0];
+    return updateNewsletterStatus(updatedUser);
+};
+
+export const updateNewsletterStatus = async (user: IUserOuput): Promise<IUserOuput> => {
+    try {
+        const newsletterHandler = getNewsletterHandler(keycloakRealm);
+
+        if (newsletterHandler) {
+            await newsletterHandler(user);
+        } else {
+            return user;
         }
-    }
+    } catch {
+        const failedResults = await UserModel.update(
+            {
+                newsletter_subscription_status: SubscriptionStatus.FAILED,
+            },
+            {
+                where: {
+                    keycloak_id: user.keycloak_id,
+                },
+                returning: true,
+            },
+        );
 
-    return results[1][0];
+        return failedResults[1][0];
+    }
+    return user;
 };
 
 export const resetAllConsents = async (): Promise<number> => {

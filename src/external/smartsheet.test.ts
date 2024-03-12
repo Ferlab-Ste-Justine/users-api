@@ -1,13 +1,11 @@
 import createHttpError from 'http-errors';
 import { StatusCodes } from 'http-status-codes';
-import fetch from 'node-fetch';
 
 import { smartsheetId, smartsheetToken } from '../config/env';
 import { IUserOuput } from '../db/models/User';
+import { SubscriptionStatus } from '../utils/newsletter';
 import { fetchSubscription, handleNewsletterUpdate, subscribeNewsletter, unsubscribeNewsletter } from './smartsheet';
 import * as smartsheetModule from './smartsheet';
-
-jest.mock('node-fetch');
 
 describe('Newsletter Functions', () => {
     const user = {
@@ -15,7 +13,7 @@ describe('Newsletter Functions', () => {
         first_name: 'John',
         last_name: 'Doe',
         affiliation: 'Health Center',
-        newsletter_subscription_status: 'subscribed',
+        newsletter_subscription_status: SubscriptionStatus.SUBSCRIBED,
         roles: ['developer'],
     } as IUserOuput;
 
@@ -32,14 +30,14 @@ describe('Newsletter Functions', () => {
 
         it('should call unsubscribeNewsletter when user is unsubscribed', async () => {
             jest.spyOn(smartsheetModule, 'unsubscribeNewsletter').mockImplementationOnce(jest.fn());
-            await handleNewsletterUpdate({ ...user, newsletter_subscription_status: 'unsubscribed' });
+            await handleNewsletterUpdate({ ...user, newsletter_subscription_status: SubscriptionStatus.UNSUBSCRIBED });
             expect(unsubscribeNewsletter).toHaveBeenCalledWith('test@example.com');
         });
 
         it('should not call any function if user subscription status is unknown', async () => {
             const subscribeNewsletterMock = jest.fn();
             const unsubscribeNewsletterMock = jest.fn();
-            await handleNewsletterUpdate({ ...user, newsletter_subscription_status: 'failed' });
+            await handleNewsletterUpdate({ ...user, newsletter_subscription_status: SubscriptionStatus.FAILED });
             expect(subscribeNewsletterMock).not.toHaveBeenCalled();
             expect(unsubscribeNewsletterMock).not.toHaveBeenCalled();
         });
@@ -64,11 +62,12 @@ describe('Newsletter Functions', () => {
                 .fn()
                 .mockResolvedValue({ results: [{ objectId: 'existingSubscriptionId' }] });
             jest.spyOn(smartsheetModule, 'fetchSubscription').mockImplementationOnce(mockFetchSubscription);
+            global.fetch = jest.fn().mockImplementation(jest.fn());
 
             const result = await subscribeNewsletter(user as IUserOuput);
 
             expect(result).toBeUndefined();
-            expect(fetch).not.toHaveBeenCalled();
+            expect(global.fetch).not.toHaveBeenCalled();
         });
 
         it('should make a POST request to subscribe', async () => {
@@ -76,7 +75,7 @@ describe('Newsletter Functions', () => {
             jest.spyOn(smartsheetModule, 'fetchSubscription').mockImplementationOnce(mockFetchSubscription);
 
             const mockResponse = { status: 200, json: jest.fn().mockResolvedValue({}) };
-            fetch.mockResolvedValue(mockResponse);
+            global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
             const result = await subscribeNewsletter(user as IUserOuput);
 
@@ -130,7 +129,7 @@ describe('Newsletter Functions', () => {
             jest.spyOn(smartsheetModule, 'fetchSubscription').mockImplementationOnce(mockFetchSubscription);
 
             const mockDeleteResponse = { status: 200 };
-            const mockFetch = fetch.mockResolvedValue(mockDeleteResponse);
+            const mockFetch = (global.fetch = jest.fn().mockResolvedValue(mockDeleteResponse));
 
             const newsletterEmail = 'test@example.com';
             await unsubscribeNewsletter(newsletterEmail);
@@ -162,14 +161,14 @@ describe('Newsletter Functions', () => {
     describe('fetchSubscription', () => {
         it('should return parsed response if status is 200', async () => {
             const mockResponse = { status: 200, json: jest.fn().mockResolvedValue({}) };
-            fetch.mockResolvedValue(mockResponse);
+            global.fetch = jest.fn().mockResolvedValue(mockResponse);
             const result = await fetchSubscription(user.newsletter_email);
             expect(result).toEqual({});
         });
 
         it('should throw error if status is not 200', async () => {
             const mockResponse = { status: 500, json: jest.fn().mockResolvedValue('Something went wrong') };
-            fetch.mockResolvedValue(mockResponse);
+            global.fetch = jest.fn().mockResolvedValue(mockResponse);
             await expect(fetchSubscription(user.newsletter_email)).rejects.toThrow(
                 createHttpError(500, 'Something went wrong'),
             );
@@ -177,7 +176,7 @@ describe('Newsletter Functions', () => {
 
         it('should throw error if fetch fails', async () => {
             const errorMessage = 'Failed to fetch';
-            fetch.mockRejectedValue(new Error(errorMessage));
+            global.fetch = jest.fn().mockRejectedValue(new Error(errorMessage));
             await expect(fetchSubscription('user.newsletter_email')).rejects.toThrowError(errorMessage);
         });
     });

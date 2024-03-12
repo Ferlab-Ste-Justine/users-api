@@ -1,20 +1,20 @@
 import createHttpError from 'http-errors';
 import { StatusCodes } from 'http-status-codes';
-import fetch from 'node-fetch';
 
 import { smartsheetId, smartsheetToken } from '../config/env';
 import config from '../config/project';
 import { IUserOuput } from '../db/models/User';
+import { SubscriptionStatus } from '../utils/newsletter';
 
 const parseRoles = (roles: string[]) =>
     roles.map((role) => config.roleOptions.find((option) => option.value === role)?.label || role).join(', ');
 
-export const handleNewsletterUpdate = async (user: IUserOuput): Promise<any> => {
+export const handleNewsletterUpdate = async (user: IUserOuput): Promise<void> => {
     switch (user.newsletter_subscription_status) {
-        case 'subscribed':
+        case SubscriptionStatus.SUBSCRIBED:
             await subscribeNewsletter(user);
             break;
-        case 'unsubscribed':
+        case SubscriptionStatus.UNSUBSCRIBED:
             await unsubscribeNewsletter(user.newsletter_email);
             break;
         default:
@@ -78,7 +78,11 @@ export const subscribeNewsletter = async (user: IUserOuput): Promise<any> => {
 
     const parsedResponse = await response.json();
 
-    return parsedResponse;
+    if (response.status === 200) {
+        return parsedResponse;
+    }
+
+    throw createHttpError(response.status, parsedResponse);
 };
 
 export const unsubscribeNewsletter = async (newsletter_email: string): Promise<any[]> => {
@@ -101,7 +105,7 @@ export const unsubscribeNewsletter = async (newsletter_email: string): Promise<a
         'Content-Type': 'application/json',
     };
 
-    const responses = await Promise.allSettled(
+    const responses = await Promise.all(
         urls.map((url) =>
             fetch(url, {
                 method: 'DELETE',
