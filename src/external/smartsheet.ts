@@ -42,7 +42,6 @@ export const subscribeNewsletter = async (user: IUserOuput): Promise<any> => {
 
     if (results.length > 0) return;
 
-    // TODO handle errors look at Arranger
     const body = [
         {
             toTop: true,
