@@ -1,15 +1,21 @@
 import Realm from '../config/realm';
-import { IUserOuput } from '../db/models/User';
+import UserModel from '../db/models/User';
 import { handleNewsletterUpdate } from '../external/smartsheet';
 
-export const SubscriptionStatus = {
-    SUBSCRIBED: 'subscribed',
-    UNSUBSCRIBED: 'unsubscribed',
-    FAILED: 'failed',
+export enum SubscriptionStatus {
+    SUBSCRIBED = 'subscribed',
+    UNSUBSCRIBED = 'unsubscribed',
+    FAILED = 'failed',
+}
+
+export type NewsletterPayload = {
+    user: UserModel;
+    email: string;
+    action: SubscriptionStatus;
 };
 
 export interface NewsletterHandler {
-    (payload: IUserOuput): Promise<string>;
+    (payload: NewsletterPayload): Promise<SubscriptionStatus>;
 }
 
 export const getNewsletterHandler = (realm: string): NewsletterHandler => {

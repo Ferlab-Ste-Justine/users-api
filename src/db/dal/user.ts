@@ -6,7 +6,7 @@ import { uuid } from 'uuidv4';
 
 import { keycloakRealm, profileImageBucket } from '../../config/env';
 import config from '../../config/project';
-import { getNewsletterHandler } from '../../utils/newsletter';
+import { getNewsletterHandler, NewsletterPayload, SubscriptionStatus } from '../../utils/newsletter';
 import { UserValidator } from '../../utils/userValidator';
 import UserModel, { IUserInput, IUserOuput } from '../models/User';
 
@@ -189,9 +189,11 @@ export const createUser = async (keycloak_id: string, payload: IUserInput): Prom
 };
 
 export const updateUser = async (keycloak_id: string, payload: IUserInput): Promise<IUserOuput> => {
+    const { newsletter_email, newsletter_subscription_status, ...rest } = payload;
+
     const results = await UserModel.update(
         {
-            ...sanitizeInputPayload(payload),
+            ...sanitizeInputPayload(rest),
             updated_date: new Date(),
         },
         {
@@ -201,12 +203,13 @@ export const updateUser = async (keycloak_id: string, payload: IUserInput): Prom
             returning: true,
         },
     );
+    const updatedUser = results[1][0];
 
-    const updatedUser: IUserOuput = results[1][0];
-
-    // TODO manage here what to do with user email since its removed before when unsubing
-
-    return updateNewsletterStatus(updatedUser);
+    return updateNewsletterStatus({
+        user: updatedUser,
+        email: newsletter_email,
+        action: newsletter_subscription_status,
+    });
 };
 
 export const deleteUser = async (keycloak_id: string): Promise<void> => {
@@ -245,9 +248,11 @@ export const completeRegistration = async (
         );
     }
 
+    const { newsletter_email, newsletter_subscription_status, ...rest } = payload;
+
     const results = await UserModel.update(
         {
-            ...sanitizeInputPayload(payload),
+            ...sanitizeInputPayload(rest),
             completed_registration: true,
             updated_date: new Date(),
         },
@@ -259,32 +264,48 @@ export const completeRegistration = async (
         },
     );
 
-    const updatedUser: IUserOuput = results[1][0];
+    const updatedUser = results[1][0];
 
-    return updateNewsletterStatus(updatedUser);
+    return updateNewsletterStatus({
+        user: updatedUser,
+        email: newsletter_email,
+        action: newsletter_subscription_status,
+    });
 };
 
-export const updateNewsletterStatus = async (user: IUserOuput): Promise<IUserOuput> => {
+export const updateNewsletterStatus = async (payload: NewsletterPayload): Promise<IUserOuput> => {
     const newsletterHandler = getNewsletterHandler(keycloakRealm);
 
-    if (newsletterHandler) {
-        const newsletterStatus = await newsletterHandler(user);
-        const updatedUser = await UserModel.update(
-            {
-                newsletter_subscription_status: newsletterStatus,
+    if (newsletterHandler && payload.action) {
+        const parsedPayload = { ...payload };
+
+        if (payload.action === SubscriptionStatus.UNSUBSCRIBED) {
+            parsedPayload.email = payload.user.dataValues.newsletter_email;
+        }
+
+        const newsletterStatus = await newsletterHandler(parsedPayload);
+
+        const updateParams = {
+            newsletter_subscription_status: newsletterStatus,
+            newsletter_email: undefined,
+            updated_date: new Date(),
+        };
+
+        if (newsletterStatus !== SubscriptionStatus.FAILED) {
+            updateParams.newsletter_email = payload.email;
+        }
+
+        const updatedUser = await UserModel.update(updateParams, {
+            where: {
+                keycloak_id: payload.user.keycloak_id,
             },
-            {
-                where: {
-                    keycloak_id: user.keycloak_id,
-                },
-                returning: true,
-            },
-        );
+            returning: true,
+        });
 
         return updatedUser[1][0];
     }
 
-    return user;
+    return payload.user;
 };
 
 export const resetAllConsents = async (): Promise<number> => {

@@ -1,16 +1,14 @@
-import createHttpError from 'http-errors';
-import { StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 
 import { smartsheetId, smartsheetToken } from '../config/env';
 import config from '../config/project';
-import { IUserOuput } from '../db/models/User';
-import { SubscriptionStatus } from '../utils/newsletter';
+import { NewsletterPayload, SubscriptionStatus } from '../utils/newsletter';
+import { Column, FormattedRow, Row, Sheet, SubscribeNewsletterPayload } from './smartsheetTypes';
 
 const parseRoles = (roles: string[]) =>
     roles.map((role) => config.roleOptions.find((option) => option.value === role)?.label || role).join(', ');
 
-const ColumnMappings = {
+const ColumnMappings: Record<string, string> = {
     'First Name': 'first_name',
     'Last Name': 'last_name',
     'Professional Title': 'roles',
@@ -18,29 +16,41 @@ const ColumnMappings = {
     Email: 'newsletter_email',
 };
 
-export const handleNewsletterUpdate = async (user: IUserOuput): Promise<string> => {
-    if (!user.newsletter_email) {
+export const handleNewsletterUpdate = async (payload: NewsletterPayload): Promise<SubscriptionStatus> => {
+    if (!payload.email) {
+        console.error('Missing newsletter email');
         return SubscriptionStatus.FAILED;
     }
 
     try {
-        const rowId = await fetchSubscription(user.newsletter_email);
+        const smartsheet = await fetchSheet();
+        const rowId = findSubscription(smartsheet.rows, payload.email);
 
-        if (user.newsletter_subscription_status === SubscriptionStatus.SUBSCRIBED && !rowId) {
-            return subscribeNewsletter(user);
-        } else if (user.newsletter_subscription_status === SubscriptionStatus.UNSUBSCRIBED) {
+        if (!rowId && payload.action === SubscriptionStatus.SUBSCRIBED) {
+            return subscribeNewsletter(smartsheet.columns, {
+                ...payload.user.dataValues,
+                newsletter_email: payload.email,
+            });
+        } else if (rowId && payload.action === SubscriptionStatus.UNSUBSCRIBED) {
             return unsubscribeNewsletter(rowId);
         }
-        return user.newsletter_subscription_status;
-    } catch {
+
+        return payload.action;
+    } catch (error) {
+        console.error(error);
         return SubscriptionStatus.FAILED;
     }
 };
 
-export const subscribeNewsletter = async (user: IUserOuput): Promise<string> => {
-    const body = await formatRow(user);
+export const subscribeNewsletter = async (
+    columns: Column[],
+    user: SubscribeNewsletterPayload,
+): Promise<SubscriptionStatus> => {
+    const row = await formatRow(columns, user);
 
-    if (!body) return SubscriptionStatus.FAILED;
+    if (!row) {
+        return SubscriptionStatus.FAILED;
+    }
 
     const response = await fetch(`https://api.smartsheet.com/2.0/sheets/${smartsheetId}/rows`, {
         method: 'POST',
@@ -48,13 +58,13 @@ export const subscribeNewsletter = async (user: IUserOuput): Promise<string> => 
             Authorization: `Bearer ${smartsheetToken}`,
             'Content-Type': 'application/json',
         },
-        body,
+        body: JSON.stringify(row),
     });
 
     return response.status === 200 ? SubscriptionStatus.SUBSCRIBED : SubscriptionStatus.FAILED;
 };
 
-export const unsubscribeNewsletter = async (rowId: string): Promise<string> => {
+export const unsubscribeNewsletter = async (rowId: number): Promise<SubscriptionStatus> => {
     const response = await fetch(`https://api.smartsheet.com/2.0/sheets/${smartsheetId}/rows?ids=${rowId}`, {
         method: 'DELETE',
         headers: {
@@ -66,28 +76,7 @@ export const unsubscribeNewsletter = async (rowId: string): Promise<string> => {
     return response.status === 200 ? SubscriptionStatus.UNSUBSCRIBED : SubscriptionStatus.FAILED;
 };
 
-export const fetchSubscription = async (newsletter_email: string): Promise<any> => {
-    const response = await fetch(
-        `https://api.smartsheet.com/2.0/search/sheets/${smartsheetId}?query=${newsletter_email}`,
-        {
-            method: 'GET',
-            headers: {
-                Authorization: `Bearer ${smartsheetToken}`,
-                'Content-Type': 'application/json',
-            },
-        },
-    );
-
-    if (response.status !== 200) {
-        throw new Error(response.statusText);
-    }
-
-    const { results: foundRows } = await response.json();
-
-    return foundRows.length > 0 ? foundRows[0].objectId : undefined;
-};
-
-export const formatRow = async (user: IUserOuput): Promise<string> => {
+export const fetchSheet = async (): Promise<Sheet> => {
     const response = await fetch(`https://api.smartsheet.com/2.0/sheets/${smartsheetId}`, {
         method: 'GET',
         headers: {
@@ -96,32 +85,32 @@ export const formatRow = async (user: IUserOuput): Promise<string> => {
         },
     });
 
-    if (response.status === 200) {
-        const parsedResponse = await response.json();
+    if (!response.ok) {
+        throw new Error(`Could not retrieve subscription status: ${response.statusText}`);
+    }
 
-        const row = [
-            {
-                toTop: true,
-                cells: parsedResponse.columns
-                    .filter((column) => ColumnMappings[column.title] !== undefined)
-                    .map((column) => {
-                        const mappedKey = ColumnMappings[column.title];
+    return response.json();
+};
 
-                        return mappedKey === 'roles'
-                            ? {
-                                  columnId: column.id,
-                                  value: user[mappedKey] ? parseRoles(user[mappedKey]) : '',
-                              }
-                            : {
-                                  columnId: column.id,
-                                  value: user[mappedKey] || '',
-                              };
-                    }),
-            },
-        ];
-
-        return JSON.stringify(row);
+export const findSubscription = (rows: Row[], newsletter_email: string): number | undefined => {
+    for (const row of rows) {
+        if (row.cells.some((cell) => cell.value === newsletter_email)) {
+            return row.id;
+        }
     }
 
     return undefined;
+};
+
+export const formatRow = async (columns: Column[], user: SubscribeNewsletterPayload): Promise<FormattedRow[]> => {
+    const relevantColumns = columns.filter((column) => ColumnMappings[column.title] !== undefined);
+
+    const formattedCells = relevantColumns.map((column) => {
+        const mappedKey = ColumnMappings[column.title];
+        const value =
+            mappedKey === 'roles' ? (user[mappedKey] ? parseRoles(user[mappedKey]) : '') : user[mappedKey] || '';
+        return { columnId: column.id, value };
+    });
+
+    return [{ toTop: true, cells: formattedCells }];
 };

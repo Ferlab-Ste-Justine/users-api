@@ -33,7 +33,7 @@ interface IUserAttributes {
     config?: any;
     locale?: string;
     newsletter_email?: string;
-    newsletter_subscription_status?: string;
+    newsletter_subscription_status?: SubscriptionStatus;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
