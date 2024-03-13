@@ -274,7 +274,7 @@ export const completeRegistration = async (
 };
 
 export const updateNewsletterStatus = async (payload: NewsletterPayload): Promise<IUserOuput> => {
-    const newsletterHandler = getNewsletterHandler('includedcc');
+    const newsletterHandler = getNewsletterHandler(keycloakRealm);
 
     if (newsletterHandler && payload.action) {
         const parsedPayload = { ...payload };
