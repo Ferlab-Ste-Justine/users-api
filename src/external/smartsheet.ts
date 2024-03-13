@@ -82,9 +82,9 @@ export const fetchSubscription = async (newsletter_email: string): Promise<any> 
         throw new Error(response.statusText);
     }
 
-    const parsedResponse = await response.json();
+    const { results: foundRows } = await response.json();
 
-    return parsedResponse.results?.[0]?.objectId || undefined;
+    return foundRows.length > 0 ? foundRows[0].objectId : undefined;
 };
 
 export const formatRow = async (user: IUserOuput): Promise<string> => {
