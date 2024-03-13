@@ -204,6 +204,8 @@ export const updateUser = async (keycloak_id: string, payload: IUserInput): Prom
 
     const updatedUser: IUserOuput = results[1][0];
 
+    // TODO manage here what to do with user email since its removed before when unsubing
+
     return updateNewsletterStatus(updatedUser);
 };
 

@@ -26,19 +26,24 @@ export const handleNewsletterUpdate = async (user: IUserOuput): Promise<string> 
         );
     }
 
-    const rowId = await fetchSubscription(user.newsletter_email);
+    try {
+        const rowId = await fetchSubscription(user.newsletter_email);
 
-    if (user.newsletter_subscription_status === SubscriptionStatus.SUBSCRIBED && !rowId) {
-        return subscribeNewsletter(user);
-    } else if (user.newsletter_subscription_status === SubscriptionStatus.UNSUBSCRIBED) {
-        return unsubscribeNewsletter(rowId);
+        if (user.newsletter_subscription_status === SubscriptionStatus.SUBSCRIBED && !rowId) {
+            return subscribeNewsletter(user);
+        } else if (user.newsletter_subscription_status === SubscriptionStatus.UNSUBSCRIBED) {
+            return unsubscribeNewsletter(rowId);
+        }
+        return user.newsletter_subscription_status;
+    } catch {
+        return SubscriptionStatus.FAILED;
     }
-
-    return user.newsletter_subscription_status;
 };
 
 export const subscribeNewsletter = async (user: IUserOuput): Promise<string> => {
-    const row = await formatRow(user);
+    const body = await formatRow(user);
+
+    if (!body) return SubscriptionStatus.FAILED;
 
     const response = await fetch(`https://api.smartsheet.com/2.0/sheets/${smartsheetId}/rows`, {
         method: 'POST',
@@ -46,7 +51,7 @@ export const subscribeNewsletter = async (user: IUserOuput): Promise<string> => 
             Authorization: `Bearer ${smartsheetToken}`,
             'Content-Type': 'application/json',
         },
-        body: row,
+        body,
     });
 
     return response.status === 200 ? SubscriptionStatus.SUBSCRIBED : SubscriptionStatus.FAILED;
@@ -76,10 +81,13 @@ export const fetchSubscription = async (newsletter_email: string): Promise<any> 
         },
     );
 
+    if (response.status !== 200) {
+        throw new Error(response.statusText);
+    }
+
     const parsedResponse = await response.json();
 
-    // TODO: Throw maybe? Because if not, it can be problematic. i.e the call fail but subscribe thinks its a good thing
-    return response.status === 200 ? parsedResponse.results?.[0]?.objectId || undefined : undefined;
+    return parsedResponse.results?.[0]?.objectId || undefined;
 };
 
 export const formatRow = async (user: IUserOuput): Promise<string> => {
@@ -91,29 +99,32 @@ export const formatRow = async (user: IUserOuput): Promise<string> => {
         },
     });
 
-    const parsedResponse = await response.json();
+    if (response.status === 200) {
+        const parsedResponse = await response.json();
 
-    // TODO handle if call failed or else it will try to filter on undef
-    const row = [
-        {
-            toTop: true,
-            cells: parsedResponse.columns
-                .filter((column) => ColumnMappings[column.title] !== undefined)
-                .map((column) => {
-                    const mappedKey = ColumnMappings[column.title];
+        const row = [
+            {
+                toTop: true,
+                cells: parsedResponse.columns
+                    .filter((column) => ColumnMappings[column.title] !== undefined)
+                    .map((column) => {
+                        const mappedKey = ColumnMappings[column.title];
 
-                    return mappedKey === 'roles'
-                        ? {
-                              columnId: column.id,
-                              value: user[mappedKey] ? parseRoles(user[mappedKey]) : '',
-                          }
-                        : {
-                              columnId: column.id,
-                              value: user[mappedKey] || '',
-                          };
-                }),
-        },
-    ];
+                        return mappedKey === 'roles'
+                            ? {
+                                  columnId: column.id,
+                                  value: user[mappedKey] ? parseRoles(user[mappedKey]) : '',
+                              }
+                            : {
+                                  columnId: column.id,
+                                  value: user[mappedKey] || '',
+                              };
+                    }),
+            },
+        ];
 
-    return response.status === 200 ? JSON.stringify(row) : undefined;
+        return JSON.stringify(row);
+    }
+
+    return undefined;
 };
