@@ -277,30 +277,24 @@ export const updateNewsletterStatus = async (payload: NewsletterPayload): Promis
     const newsletterHandler = getNewsletterHandler(keycloakRealm);
 
     if (newsletterHandler && payload.action) {
-        const parsedPayload = { ...payload };
-
-        if (payload.action === SubscriptionStatus.UNSUBSCRIBED) {
-            parsedPayload.email = payload.user.dataValues.newsletter_email;
-        }
-
-        const newsletterStatus = await newsletterHandler(parsedPayload);
-
-        const updateParams = {
-            newsletter_subscription_status: newsletterStatus,
-            newsletter_email: undefined,
-            updated_date: new Date(),
-        };
-
-        if (newsletterStatus !== SubscriptionStatus.FAILED) {
-            updateParams.newsletter_email = payload.email;
-        }
-
-        const updatedUser = await UserModel.update(updateParams, {
-            where: {
-                keycloak_id: payload.user.keycloak_id,
-            },
-            returning: true,
+        const newsletterStatus = await newsletterHandler({
+            ...payload,
+            email: payload.email || payload.user.dataValues.newsletter_email,
         });
+
+        const updatedUser = await UserModel.update(
+            {
+                newsletter_subscription_status: newsletterStatus,
+                newsletter_email: newsletterStatus !== SubscriptionStatus.FAILED ? payload.email : undefined,
+                updated_date: new Date(),
+            },
+            {
+                where: {
+                    keycloak_id: payload.user.keycloak_id,
+                },
+                returning: true,
+            },
+        );
 
         return updatedUser[1][0];
     }
