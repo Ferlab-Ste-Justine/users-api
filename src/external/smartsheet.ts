@@ -27,10 +27,12 @@ export const handleNewsletterUpdate = async (payload: NewsletterPayload): Promis
         const rowId = findSubscription(smartsheet.rows, payload.email);
 
         if (!rowId && payload.action === SubscriptionStatus.SUBSCRIBED) {
-            return subscribeNewsletter(smartsheet.columns, {
+            const formattedRow = formatRow(smartsheet.columns, {
                 ...payload.user.dataValues,
                 newsletter_email: payload.email,
             });
+
+            return subscribeNewsletter(formattedRow);
         } else if (rowId && payload.action === SubscriptionStatus.UNSUBSCRIBED) {
             return unsubscribeNewsletter(rowId);
         }
@@ -42,26 +44,22 @@ export const handleNewsletterUpdate = async (payload: NewsletterPayload): Promis
     }
 };
 
-export const subscribeNewsletter = async (
-    columns: Column[],
-    user: SubscribeNewsletterPayload,
-): Promise<SubscriptionStatus> => {
-    const row = await formatRow(columns, user);
-
-    if (!row) {
-        return SubscriptionStatus.FAILED;
-    }
-
+export const subscribeNewsletter = async (row: FormattedRow): Promise<SubscriptionStatus> => {
     const response = await fetch(`https://api.smartsheet.com/2.0/sheets/${smartsheetId}/rows`, {
         method: 'POST',
         headers: {
             Authorization: `Bearer ${smartsheetToken}`,
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(row),
+        body: JSON.stringify([row]),
     });
 
-    return response.status === 200 ? SubscriptionStatus.SUBSCRIBED : SubscriptionStatus.FAILED;
+    if (!response.ok) {
+        console.error(`Failed to Subscribe to newsletter: ${response.statusText}`);
+        return SubscriptionStatus.FAILED;
+    }
+
+    return SubscriptionStatus.SUBSCRIBED;
 };
 
 export const unsubscribeNewsletter = async (rowId: number): Promise<SubscriptionStatus> => {
@@ -73,7 +71,12 @@ export const unsubscribeNewsletter = async (rowId: number): Promise<Subscription
         },
     });
 
-    return response.status === 200 ? SubscriptionStatus.UNSUBSCRIBED : SubscriptionStatus.FAILED;
+    if (!response.ok) {
+        console.error(`Failed to Unsubscribe to newsletter: ${response.statusText}`);
+        return SubscriptionStatus.FAILED;
+    }
+
+    return SubscriptionStatus.UNSUBSCRIBED;
 };
 
 export const fetchSheet = async (): Promise<Sheet> => {
@@ -86,7 +89,7 @@ export const fetchSheet = async (): Promise<Sheet> => {
     });
 
     if (!response.ok) {
-        throw new Error(`Could not retrieve subscription status: ${response.statusText}`);
+        throw new Error(`Could not retrieve smartsheet : ${response.statusText}`);
     }
 
     return response.json();
@@ -102,7 +105,7 @@ export const findSubscription = (rows: Row[], newsletter_email: string): number 
     return undefined;
 };
 
-export const formatRow = async (columns: Column[], user: SubscribeNewsletterPayload): Promise<FormattedRow[]> => {
+export const formatRow = (columns: Column[], user: SubscribeNewsletterPayload): FormattedRow => {
     const relevantColumns = columns.filter((column) => ColumnMappings[column.title] !== undefined);
 
     const formattedCells = relevantColumns.map((column) => {
@@ -112,5 +115,5 @@ export const formatRow = async (columns: Column[], user: SubscribeNewsletterPayl
         return { columnId: column.id, value };
     });
 
-    return [{ toTop: true, cells: formattedCells }];
+    return { toTop: true, cells: formattedCells };
 };
