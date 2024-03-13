@@ -227,6 +227,7 @@ UserModel.init(
                 SubscriptionStatus.UNSUBSCRIBED,
                 SubscriptionStatus.FAILED,
             ),
+            allowNull: true,
             validate: {
                 isAlpha: true,
             },
