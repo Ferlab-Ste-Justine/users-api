@@ -20,10 +20,7 @@ const ColumnMappings = {
 
 export const handleNewsletterUpdate = async (user: IUserOuput): Promise<string> => {
     if (!user.newsletter_email) {
-        throw createHttpError(
-            StatusCodes.BAD_REQUEST,
-            'Some required fields are missing to remove newsletter subscription',
-        );
+        return SubscriptionStatus.FAILED;
     }
 
     try {
