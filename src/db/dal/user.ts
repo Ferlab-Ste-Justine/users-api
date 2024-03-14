@@ -276,7 +276,10 @@ export const completeRegistration = async (
 export const updateNewsletterStatus = async (payload: NewsletterPayload): Promise<IUserOuput> => {
     const newsletterHandler = getNewsletterHandler(keycloakRealm);
 
-    if (newsletterHandler && payload.action) {
+    const shouldUpdateStatus =
+        payload.action && payload.action !== payload.user.dataValues.newsletter_subscription_status;
+
+    if (newsletterHandler && shouldUpdateStatus) {
         const newsletterStatus = await newsletterHandler({
             ...payload,
             email: payload.email || payload.user.dataValues.newsletter_email,
