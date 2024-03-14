@@ -45,38 +45,36 @@ export const handleNewsletterUpdate = async (payload: NewsletterPayload): Promis
 };
 
 export const subscribeNewsletter = async (row: FormattedRow): Promise<SubscriptionStatus> => {
-    const response = await fetch(`https://api.smartsheet.com/2.0/sheets/${smartsheetId}/rows`, {
-        method: 'POST',
-        headers: {
-            Authorization: `Bearer ${smartsheetToken}`,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify([row]),
-    });
-
-    if (!response.ok) {
-        console.error(`Failed to Subscribe to newsletter: ${response.statusText}`);
+    try {
+        await fetch(`https://api.smartsheet.com/2.0/sheets/${smartsheetId}/rows`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${smartsheetToken}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify([row]),
+        });
+        return SubscriptionStatus.SUBSCRIBED;
+    } catch (error) {
+        console.error(`Failed to Subscribe to newsletter: ${error}`);
         return SubscriptionStatus.FAILED;
     }
-
-    return SubscriptionStatus.SUBSCRIBED;
 };
 
 export const unsubscribeNewsletter = async (rowId: number): Promise<SubscriptionStatus> => {
-    const response = await fetch(`https://api.smartsheet.com/2.0/sheets/${smartsheetId}/rows?ids=${rowId}`, {
-        method: 'DELETE',
-        headers: {
-            Authorization: `Bearer ${smartsheetToken}`,
-            'Content-Type': 'application/json',
-        },
-    });
-
-    if (!response.ok) {
-        console.error(`Failed to Unsubscribe to newsletter: ${response.statusText}`);
+    try {
+        await fetch(`https://api.smartsheet.com/2.0/sheets/${smartsheetId}/rows?ids=${rowId}`, {
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${smartsheetToken}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return SubscriptionStatus.UNSUBSCRIBED;
+    } catch (error) {
+        console.error(`Failed to Unsubscribe to newsletter: ${error}`);
         return SubscriptionStatus.FAILED;
     }
-
-    return SubscriptionStatus.UNSUBSCRIBED;
 };
 
 export const fetchSheet = async (): Promise<Sheet> => {

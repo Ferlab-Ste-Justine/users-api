@@ -151,10 +151,7 @@ describe('smartsheet', () => {
         });
 
         it('should handle failure during newsletter subscription', async () => {
-            fetch.mockResolvedValueOnce({
-                ok: false,
-                statusText: 'Failed',
-            });
+            fetch.mockRejectedValueOnce(new Error('Network Error'));
 
             const mockRow = { toTop: true, cells: [] };
 
@@ -178,10 +175,7 @@ describe('smartsheet', () => {
         });
 
         it('should handle failure during newsletter unsubscription', async () => {
-            fetch.mockResolvedValueOnce({
-                ok: false,
-                statusText: 'Failed',
-            });
+            fetch.mockRejectedValueOnce(new Error('Network Error'));
 
             const result = await unsubscribeNewsletter(123);
 
