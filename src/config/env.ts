@@ -17,3 +17,6 @@ export const dbUser = process.env.DATABASE_USER;
 export const dbPassword = process.env.DATABASE_PASSWORD;
 
 export const adminRoleName = process.env.ADMIN_ROLE_NAME || 'admin';
+
+export const smartsheetId = process.env.SMARTSHEET_ID;
+export const smartsheetToken = process.env.SMARTSHEET_TOKEN;

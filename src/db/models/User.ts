@@ -1,6 +1,7 @@
 import { DataTypes, Model } from 'sequelize';
 
 import { LINKEDIN_REGEX, MAX_LENGTH_PER_ROLE, NAME_REGEX, UUID_VERSION } from '../../utils/constants';
+import { SubscriptionStatus } from '../../utils/newsletter';
 import sequelizeConnection from '../config';
 
 interface IUserAttributes {
@@ -31,6 +32,8 @@ interface IUserAttributes {
     deleted: boolean;
     config?: any;
     locale?: string;
+    newsletter_email?: string;
+    newsletter_subscription_status?: SubscriptionStatus;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -208,7 +211,23 @@ UserModel.init(
             defaultValue: {},
         },
         locale: {
-            type: DataTypes.ENUM("en", "fr"),
+            type: DataTypes.ENUM('en', 'fr'),
+            validate: {
+                isAlpha: true,
+            },
+        },
+        newsletter_email: {
+            type: DataTypes.TEXT,
+            allowNull: true,
+            validate: { isEmail: true },
+        },
+        newsletter_subscription_status: {
+            type: DataTypes.ENUM(
+                SubscriptionStatus.SUBSCRIBED,
+                SubscriptionStatus.UNSUBSCRIBED,
+                SubscriptionStatus.FAILED,
+            ),
+            allowNull: true,
             validate: {
                 isAlpha: true,
             },
