@@ -179,13 +179,20 @@ export const isUserExists = async (
 };
 
 export const createUser = async (keycloak_id: string, payload: IUserInput): Promise<IUserOuput> => {
+    const { newsletter_email, newsletter_subscription_status, ...rest } = payload;
+
     const newUser = await UserModel.create({
-        ...payload,
+        ...rest,
         keycloak_id: keycloak_id,
         creation_date: new Date(),
         updated_date: new Date(),
     });
-    return newUser;
+
+    return updateNewsletterStatus({
+        user: newUser,
+        email: newsletter_email,
+        action: newsletter_subscription_status,
+    });
 };
 
 export const updateUser = async (keycloak_id: string, payload: IUserInput): Promise<IUserOuput> => {
