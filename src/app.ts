@@ -5,6 +5,7 @@ import { Keycloak } from 'keycloak-connect';
 
 import { adminRoleName } from './config/env';
 import adminRouter from './routes/admin';
+import newsletterRouter from './routes/newsletter';
 import publicRouter from './routes/public';
 import savedFiltersRouter from './routes/savedFilters';
 import statisticsRouter from './routes/statistics';
@@ -37,6 +38,7 @@ export default (keycloak: Keycloak): Express => {
     app.use('/user-sets', keycloak.protect(), userSetsRouter);
     app.use('/admin', keycloak.protect('realm:' + adminRoleName), adminRouter);
     app.use('/statistics', keycloak.protect('realm:' + adminRoleName), statisticsRouter);
+    app.use('/newsletter', keycloak.protect(), newsletterRouter);
 
     app.use(globalErrorLogger, globalErrorHandler);
 

@@ -44,6 +44,18 @@ export const handleNewsletterUpdate = async (payload: NewsletterPayload): Promis
     }
 };
 
+export const getSubscriptionStatus = async (email: string): Promise<SubscriptionStatus> => {
+    try {
+        const smartsheet = await fetchSheet();
+        const rowId = findSubscription(smartsheet.rows, email);
+
+        return rowId ? SubscriptionStatus.SUBSCRIBED : SubscriptionStatus.UNSUBSCRIBED;
+    } catch (error) {
+        console.error(error);
+        return SubscriptionStatus.FAILED;
+    }
+};
+
 export const subscribeNewsletter = async (row: FormattedRow): Promise<SubscriptionStatus> => {
     try {
         await fetch(`https://api.smartsheet.com/2.0/sheets/${smartsheetId}/rows`, {
