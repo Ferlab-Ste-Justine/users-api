@@ -1,9 +1,10 @@
+import { keycloakRealm } from '../../config/env';
 import { getNewsletterStatusFetcher, getNewsletterUpdater, SubscriptionStatus } from '../../utils/newsletter';
 import UserModel, { IUserOuput } from '../models/User';
 import { getUserById } from './user';
 
 export const subscribeNewsletter = async (keycloak_id: string, email: string): Promise<IUserOuput> => {
-    const newsletterUpdater = getNewsletterUpdater('includedcc');
+    const newsletterUpdater = getNewsletterUpdater(keycloakRealm);
 
     const user = await getUserById(keycloak_id, true);
 
@@ -24,7 +25,7 @@ export const subscribeNewsletter = async (keycloak_id: string, email: string): P
 };
 
 export const unsubscribeNewsletter = async (keycloak_id: string): Promise<IUserOuput> => {
-    const newsletterUpdater = getNewsletterUpdater('includedcc');
+    const newsletterUpdater = getNewsletterUpdater(keycloakRealm);
 
     const user = await getUserById(keycloak_id, true);
 
@@ -45,7 +46,7 @@ export const unsubscribeNewsletter = async (keycloak_id: string): Promise<IUserO
 };
 
 export const refreshNewsletterStatus = async (keycloak_id: string): Promise<IUserOuput> => {
-    const newsletterStatusFetcher = getNewsletterStatusFetcher('includedcc');
+    const newsletterStatusFetcher = getNewsletterStatusFetcher(keycloakRealm);
 
     const user = await getUserById(keycloak_id, true);
     const isSubscribed = user.dataValues.newsletter_subscription_status === SubscriptionStatus.SUBSCRIBED;
