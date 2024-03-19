@@ -15,7 +15,7 @@ export type NewsletterPayload = {
 };
 
 export interface NewsletterUpdater {
-    (email: NewsletterPayload): Promise<SubscriptionStatus>;
+    (payload: NewsletterPayload): Promise<SubscriptionStatus>;
 }
 
 export interface NewsletterStatusFetcher {
