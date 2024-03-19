@@ -19,6 +19,8 @@ newsletterRouter.put('/subscribe', async (req, res, next) => {
     try {
         const keycloak_id = req['kauth']?.grant?.access_token?.content?.sub;
         const result = await subscribeNewsletter(keycloak_id, req.body.newsletter_email);
+
+        console.log(result);
         res.status(StatusCodes.OK).send(result);
     } catch (e) {
         next(e);

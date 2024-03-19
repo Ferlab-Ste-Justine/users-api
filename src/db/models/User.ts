@@ -38,8 +38,9 @@ interface IUserAttributes {
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface IUserInput extends IUserAttributes {}
+
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface IUserOuput extends IUserAttributes {}
+export interface IUserOutput extends IUserAttributes {}
 
 class UserModel extends Model<IUserAttributes, IUserInput> implements IUserAttributes {
     public id: number;

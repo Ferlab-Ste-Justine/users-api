@@ -1,5 +1,5 @@
 import Realm from '../config/realm';
-import UserModel from '../db/models/User';
+import { IUserOutput } from '../db/models/User';
 import { getSubscriptionStatus, handleNewsletterUpdate } from '../external/smartsheet';
 
 export enum SubscriptionStatus {
@@ -9,7 +9,7 @@ export enum SubscriptionStatus {
 }
 
 export type NewsletterPayload = {
-    user: UserModel;
+    user: IUserOutput;
     email: string;
     action: SubscriptionStatus;
 };

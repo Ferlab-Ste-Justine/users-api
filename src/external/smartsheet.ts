@@ -28,7 +28,7 @@ export const handleNewsletterUpdate = async (payload: NewsletterPayload): Promis
 
         if (!rowId && payload.action === SubscriptionStatus.SUBSCRIBED) {
             const formattedRow = formatRow(smartsheet.columns, {
-                ...payload.user.dataValues,
+                ...payload.user,
                 newsletter_email: payload.email,
             });
 

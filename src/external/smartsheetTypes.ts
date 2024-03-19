@@ -1,4 +1,4 @@
-import { IUserOuput } from '../db/models/User';
+import { IUserOutput } from '../db/models/User';
 
 // The type could be better but this is most likely sufficient for our use case
 // In case we need to update the types, it's Greatly inspired from:
@@ -69,7 +69,7 @@ export type Row = {
 };
 
 export type SubscribeNewsletterPayload = Pick<
-    IUserOuput,
+    IUserOutput,
     'first_name' | 'last_name' | 'affiliation' | 'roles' | 'newsletter_email'
 >;
 

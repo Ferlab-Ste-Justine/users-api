@@ -7,7 +7,7 @@ import { uuid } from 'uuidv4';
 import { profileImageBucket } from '../../config/env';
 import config from '../../config/project';
 import { UserValidator } from '../../utils/userValidator';
-import UserModel, { IUserInput } from '../models/User';
+import UserModel, { IUserInput, IUserOutput } from '../models/User';
 
 let S3Client;
 try {
@@ -17,7 +17,6 @@ try {
 }
 
 const sanitizeInputPayload = (payload: IUserInput) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const {
         id,
         keycloak_id,
@@ -149,7 +148,7 @@ export const getProfileImageUploadPresignedUrl = async (keycloak_id: string) => 
     };
 };
 
-export const getUserById = async (keycloak_id: string, isOwn: boolean): Promise<UserModel> => {
+export const getUserById = async (keycloak_id: string, isOwn: boolean): Promise<IUserOutput> => {
     let attributesClause = {};
     if (!isOwn) {
         attributesClause = {
@@ -169,7 +168,7 @@ export const getUserById = async (keycloak_id: string, isOwn: boolean): Promise<
         throw createHttpError(StatusCodes.NOT_FOUND, `User with keycloak id ${keycloak_id} does not exist.`);
     }
 
-    return user;
+    return user.dataValues;
 };
 
 export const isUserExists = async (
@@ -188,7 +187,7 @@ export const isUserExists = async (
     };
 };
 
-export const createUser = async (keycloak_id: string, payload: IUserInput): Promise<UserModel> => {
+export const createUser = async (keycloak_id: string, payload: IUserInput): Promise<IUserOutput> => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { newsletter_email, newsletter_subscription_status, ...rest } = payload;
 
@@ -199,10 +198,10 @@ export const createUser = async (keycloak_id: string, payload: IUserInput): Prom
         updated_date: new Date(),
     });
 
-    return newUser;
+    return newUser.dataValues;
 };
 
-export const updateUser = async (keycloak_id: string, payload: IUserInput): Promise<UserModel> => {
+export const updateUser = async (keycloak_id: string, payload: IUserInput): Promise<IUserOutput> => {
     const results = await UserModel.update(
         {
             ...sanitizeInputPayload(payload),
@@ -216,7 +215,7 @@ export const updateUser = async (keycloak_id: string, payload: IUserInput): Prom
         },
     );
 
-    return results[1][0];
+    return results[1][0].dataValues;
 };
 
 export const deleteUser = async (keycloak_id: string): Promise<void> => {
@@ -249,7 +248,7 @@ export const completeRegistration = async (
     keycloak_id: string,
     payload: IUserInput,
     validator: UserValidator,
-): Promise<UserModel> => {
+): Promise<IUserOutput> => {
     if (!validator(payload)) {
         throw createHttpError(
             StatusCodes.BAD_REQUEST,
@@ -271,7 +270,7 @@ export const completeRegistration = async (
         },
     );
 
-    return results[1][0];
+    return results[1][0].dataValues;
 };
 
 export const resetAllConsents = async (): Promise<number> => {
