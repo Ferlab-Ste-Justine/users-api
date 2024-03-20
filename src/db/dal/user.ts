@@ -4,11 +4,10 @@ import { StatusCodes } from 'http-status-codes';
 import { Op, Order } from 'sequelize';
 import { uuid } from 'uuidv4';
 
-import { keycloakRealm, profileImageBucket } from '../../config/env';
+import { profileImageBucket } from '../../config/env';
 import config from '../../config/project';
-import { getNewsletterHandler, NewsletterPayload, SubscriptionStatus } from '../../utils/newsletter';
 import { UserValidator } from '../../utils/userValidator';
-import UserModel, { IUserInput, IUserOuput } from '../models/User';
+import UserModel, { IUserInput, IUserOutput } from '../models/User';
 
 let S3Client;
 try {
@@ -18,9 +17,19 @@ try {
 }
 
 const sanitizeInputPayload = (payload: IUserInput) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id, keycloak_id, completed_registration, creation_date, email, era_commons_id, nih_ned_id, ...rest } =
-        payload;
+    const {
+        id,
+        keycloak_id,
+        completed_registration,
+        creation_date,
+        email,
+        era_commons_id,
+        nih_ned_id,
+        newsletter_email,
+        newsletter_subscription_status,
+        ...rest
+    } = payload;
+
     return rest;
 };
 
@@ -139,7 +148,7 @@ export const getProfileImageUploadPresignedUrl = async (keycloak_id: string) => 
     };
 };
 
-export const getUserById = async (keycloak_id: string, isOwn: boolean): Promise<IUserOuput> => {
+export const getUserById = async (keycloak_id: string, isOwn: boolean): Promise<IUserOutput> => {
     let attributesClause = {};
     if (!isOwn) {
         attributesClause = {
@@ -159,7 +168,7 @@ export const getUserById = async (keycloak_id: string, isOwn: boolean): Promise<
         throw createHttpError(StatusCodes.NOT_FOUND, `User with keycloak id ${keycloak_id} does not exist.`);
     }
 
-    return user;
+    return user.dataValues;
 };
 
 export const isUserExists = async (
@@ -178,22 +187,24 @@ export const isUserExists = async (
     };
 };
 
-export const createUser = async (keycloak_id: string, payload: IUserInput): Promise<IUserOuput> => {
+export const createUser = async (keycloak_id: string, payload: IUserInput): Promise<IUserOutput> => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { newsletter_email, newsletter_subscription_status, ...rest } = payload;
+
     const newUser = await UserModel.create({
-        ...payload,
+        ...rest,
         keycloak_id: keycloak_id,
         creation_date: new Date(),
         updated_date: new Date(),
     });
-    return newUser;
+
+    return newUser.dataValues;
 };
 
-export const updateUser = async (keycloak_id: string, payload: IUserInput): Promise<IUserOuput> => {
-    const { newsletter_email, newsletter_subscription_status, ...rest } = payload;
-
+export const updateUser = async (keycloak_id: string, payload: IUserInput): Promise<IUserOutput> => {
     const results = await UserModel.update(
         {
-            ...sanitizeInputPayload(rest),
+            ...sanitizeInputPayload(payload),
             updated_date: new Date(),
         },
         {
@@ -203,13 +214,8 @@ export const updateUser = async (keycloak_id: string, payload: IUserInput): Prom
             returning: true,
         },
     );
-    const updatedUser = results[1][0];
 
-    return updateNewsletterStatus({
-        user: updatedUser,
-        email: newsletter_email,
-        action: newsletter_subscription_status,
-    });
+    return results[1][0].dataValues;
 };
 
 export const deleteUser = async (keycloak_id: string): Promise<void> => {
@@ -226,6 +232,8 @@ export const deleteUser = async (keycloak_id: string): Promise<void> => {
             linkedin: null,
             external_individual_fullname: null,
             external_individual_email: null,
+            newsletter_email: null,
+            newsletter_subscription_status: null,
             deleted: true,
         },
         {
@@ -240,7 +248,7 @@ export const completeRegistration = async (
     keycloak_id: string,
     payload: IUserInput,
     validator: UserValidator,
-): Promise<IUserOuput> => {
+): Promise<IUserOutput> => {
     if (!validator(payload)) {
         throw createHttpError(
             StatusCodes.BAD_REQUEST,
@@ -248,11 +256,9 @@ export const completeRegistration = async (
         );
     }
 
-    const { newsletter_email, newsletter_subscription_status, ...rest } = payload;
-
     const results = await UserModel.update(
         {
-            ...sanitizeInputPayload(rest),
+            ...sanitizeInputPayload(payload),
             completed_registration: true,
             updated_date: new Date(),
         },
@@ -264,45 +270,7 @@ export const completeRegistration = async (
         },
     );
 
-    const updatedUser = results[1][0];
-
-    return updateNewsletterStatus({
-        user: updatedUser,
-        email: newsletter_email,
-        action: newsletter_subscription_status,
-    });
-};
-
-export const updateNewsletterStatus = async (payload: NewsletterPayload): Promise<IUserOuput> => {
-    const newsletterHandler = getNewsletterHandler(keycloakRealm);
-
-    const shouldUpdateStatus =
-        payload.action && payload.action !== payload.user.dataValues.newsletter_subscription_status;
-
-    if (newsletterHandler && shouldUpdateStatus) {
-        const newsletterStatus = await newsletterHandler({
-            ...payload,
-            email: payload.email || payload.user.dataValues.newsletter_email,
-        });
-
-        const updatedUser = await UserModel.update(
-            {
-                newsletter_subscription_status: newsletterStatus,
-                newsletter_email: newsletterStatus !== SubscriptionStatus.FAILED ? payload.email : undefined,
-                updated_date: new Date(),
-            },
-            {
-                where: {
-                    keycloak_id: payload.user.keycloak_id,
-                },
-                returning: true,
-            },
-        );
-
-        return updatedUser[1][0];
-    }
-
-    return payload.user;
+    return results[1][0].dataValues;
 };
 
 export const resetAllConsents = async (): Promise<number> => {

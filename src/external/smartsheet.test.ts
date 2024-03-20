@@ -6,6 +6,7 @@ import {
     fetchSheet,
     findSubscription,
     formatRow,
+    getSubscriptionStatus,
     handleNewsletterUpdate,
     subscribeNewsletter,
     unsubscribeNewsletter,
@@ -133,6 +134,63 @@ describe('smartsheet', () => {
 
             expect(result).toEqual(SubscriptionStatus.FAILED);
             expect(fetch).toHaveBeenCalledTimes(1);
+        });
+    });
+    describe('getSubscriptionStatus', () => {
+        it('should return SUBSCRIBED if rowId is found', async () => {
+            const subscribeMockSheet = {
+                ...mockSheet,
+                rows: [
+                    {
+                        id: 1,
+                        cells: [
+                            {
+                                columnId: 5,
+                                value: 'test@example.com',
+                            },
+                        ],
+                    },
+                ],
+            };
+            const email = 'test@example.com';
+
+            fetch.mockResolvedValueOnce(new Response(JSON.stringify(subscribeMockSheet)));
+
+            const result = await getSubscriptionStatus(email);
+
+            expect(result).toBe(SubscriptionStatus.SUBSCRIBED);
+        });
+
+        it('should return UNSUBSCRIBED if no rowId is found', async () => {
+            const unsubscribeMockSheet = {
+                ...mockSheet,
+                rows: [
+                    {
+                        id: 1,
+                        cells: [
+                            {
+                                columnId: 5,
+                                value: 'test@example.com',
+                            },
+                        ],
+                    },
+                ],
+            };
+            const email = 'nonexistent@example.com';
+
+            fetch.mockResolvedValueOnce(new Response(JSON.stringify(unsubscribeMockSheet)));
+
+            const result = await getSubscriptionStatus(email);
+
+            expect(result).toBe(SubscriptionStatus.UNSUBSCRIBED);
+        });
+
+        it('should return FAILED if fetchSheet fails', async () => {
+            fetch.mockRejectedValueOnce(new Error('Network Error'));
+            const email = 'test@example.com';
+            const result = await getSubscriptionStatus(email);
+
+            expect(result).toBe(SubscriptionStatus.FAILED);
         });
     });
 

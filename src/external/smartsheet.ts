@@ -28,7 +28,7 @@ export const handleNewsletterUpdate = async (payload: NewsletterPayload): Promis
 
         if (!rowId && payload.action === SubscriptionStatus.SUBSCRIBED) {
             const formattedRow = formatRow(smartsheet.columns, {
-                ...payload.user.dataValues,
+                ...payload.user,
                 newsletter_email: payload.email,
             });
 
@@ -38,6 +38,18 @@ export const handleNewsletterUpdate = async (payload: NewsletterPayload): Promis
         }
 
         return payload.action;
+    } catch (error) {
+        console.error(error);
+        return SubscriptionStatus.FAILED;
+    }
+};
+
+export const getSubscriptionStatus = async (email: string): Promise<SubscriptionStatus> => {
+    try {
+        const smartsheet = await fetchSheet();
+        const rowId = findSubscription(smartsheet.rows, email);
+
+        return rowId ? SubscriptionStatus.SUBSCRIBED : SubscriptionStatus.UNSUBSCRIBED;
     } catch (error) {
         console.error(error);
         return SubscriptionStatus.FAILED;
