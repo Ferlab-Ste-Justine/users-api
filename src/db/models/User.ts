@@ -56,6 +56,7 @@ class UserModel extends Model<IUserAttributes, IUserInput> implements IUserAttri
     public portal_usages: string[];
     public public_email?: string;
     public external_individual_email?: string;
+    public linkedin?: string;
 }
 
 UserModel.init(
@@ -242,6 +243,7 @@ UserModel.init(
             beforeValidate: (instance) => {
                 instance.public_email = instance.public_email || null;
                 instance.external_individual_email = instance.external_individual_email || null;
+                instance.linkedin = instance.linkedin || null;
             },
         },
     },
