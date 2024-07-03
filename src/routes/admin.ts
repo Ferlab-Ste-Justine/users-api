@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { keycloakRealm } from '../config/env';
 import Realm from '../config/realm';
 import { deleteUser, resetAllConsents } from '../db/dal/user';
-import { createOrUpdate, getUserList, readCsv } from '../external/persona';
+import { createOrUpdate, getUserList, readCsv, validateUniqPersonas } from '../external/persona';
 
 // Handles requests made to /admin
 const adminRouter = Router();
@@ -35,11 +35,15 @@ adminRouter.post('/doMigrationFromPersona', async (req, res, next) => {
         } else {
             const csvContent: string = await getUserList(req.headers.authorization);
             const personas = await readCsv(csvContent);
-            const result = await Promise.all(personas.map((p) => createOrUpdate(p)));
-            res.status(StatusCodes.OK).send({
-                created: result.filter((s) => s === 'created').length,
-                updated: result.filter((s) => s === 'updated').length,
-            });
+            if (validateUniqPersonas(personas)) {
+                const result = await Promise.all(personas.map((p) => createOrUpdate(p)));
+                res.status(StatusCodes.OK).send({
+                    created: result.filter((s) => s === 'created').length,
+                    updated: result.filter((s) => s === 'updated').length,
+                });
+            } else {
+                res.status(StatusCodes.BAD_REQUEST).send('Duplicate persona, migration aborted');
+            }
         }
     } catch (e) {
         next(e);

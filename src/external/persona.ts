@@ -43,9 +43,22 @@ export type Persona = {
     bio: string;
 };
 
-export const validateUniqPersonas = (personas: Persona[]) => {
-    // const result = personas.reduce()
-    // personas.
+export const validateUniqPersonas = (personas: Persona[]): boolean => {
+    const result = new Map();
+    personas.reduce((map, obj) => {
+        if (map.has(obj.egoId)) {
+            map.set(obj.egoId, map.get(obj.egoId).push(obj));
+        } else {
+            map.set(obj.egoId, [obj]);
+        }
+        return map;
+    }, result);
+    const values = Array.from(result.values()).filter((l) => l.length !== 1);
+    if (values.length > 0) {
+        console.warn('OOPS duplicate persona');
+        return false;
+    }
+    return true;
 };
 
 export const readCsv = (csvContent: string): Promise<Persona[]> =>
