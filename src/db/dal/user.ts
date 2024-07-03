@@ -24,9 +24,9 @@ const sanitizeInputPayload = (payload: IUserInput) => {
         creation_date,
         email,
         era_commons_id,
-        nih_ned_id,
         newsletter_email,
         newsletter_subscription_status,
+        newsletter_dataset_subscription_status,
         ...rest
     } = payload;
 
@@ -112,6 +112,7 @@ export const searchUsers = async ({
         where: {
             [Op.and]: {
                 completed_registration: true,
+                is_public: true,
                 deleted: false,
                 ...matchClauses,
                 [Op.and]: andClauses,
@@ -225,7 +226,6 @@ export const deleteUser = async (keycloak_id: string): Promise<void> => {
             email: null,
             affiliation: null,
             public_email: null,
-            nih_ned_id: null,
             era_commons_id: null,
             first_name: null,
             last_name: null,

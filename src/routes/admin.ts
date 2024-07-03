@@ -1,7 +1,10 @@
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
+import { keycloakRealm } from '../config/env';
+import Realm from '../config/realm';
 import { deleteUser, resetAllConsents } from '../db/dal/user';
+import { createOrUpdate, getUserList, readCsv } from '../external/persona';
 
 // Handles requests made to /admin
 const adminRouter = Router();
@@ -20,6 +23,24 @@ adminRouter.put('/resetAllConsents', async (req, res, next) => {
     try {
         const numberOfRowsUpdated = await resetAllConsents();
         res.status(StatusCodes.OK).send({ updated: numberOfRowsUpdated });
+    } catch (e) {
+        next(e);
+    }
+});
+
+adminRouter.post('/doMigrationFromPersona', async (req, res, next) => {
+    try {
+        if (keycloakRealm !== Realm.KF) {
+            res.status(StatusCodes.BAD_REQUEST).send('Not available for this project');
+        } else {
+            const csvContent: string = await getUserList(req.headers.authorization);
+            const personas = await readCsv(csvContent);
+            const result = await Promise.all(personas.map((p) => createOrUpdate(p)));
+            res.status(StatusCodes.OK).send({
+                created: result.filter((s) => s === 'created').length,
+                updated: result.filter((s) => s === 'updated').length,
+            });
+        }
     } catch (e) {
         next(e);
     }
