@@ -79,7 +79,6 @@ export const share = async (id: string, keycloak_id: string): Promise<boolean> =
     const updatedCount = await UserSetModel.update(
         {
             sharedpublicly: true,
-            updated_date: new Date(),
         },
         {
             where: {
