@@ -40,6 +40,7 @@ adminRouter.post('/doMigrationFromPersona', async (req, res, next) => {
                 res.status(StatusCodes.OK).send({
                     created: result.filter((s) => s === 'created').length,
                     updated: result.filter((s) => s === 'updated').length,
+                    ignored: result.filter((s) => s === 'ignored').length,
                 });
             } else {
                 res.status(StatusCodes.BAD_REQUEST).send('Duplicate persona, migration aborted');

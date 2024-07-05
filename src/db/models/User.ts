@@ -98,14 +98,14 @@ UserModel.init(
         first_name: {
             type: DataTypes.CITEXT,
             validate: {
-                len: [1, 35],
+                len: [1, 70],
                 is: NAME_REGEX,
             },
         },
         last_name: {
             type: DataTypes.CITEXT,
             validate: {
-                len: [1, 35],
+                len: [1, 70],
                 is: NAME_REGEX,
             },
         },
