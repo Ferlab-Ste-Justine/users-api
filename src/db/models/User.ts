@@ -10,7 +10,6 @@ interface IUserAttributes {
     first_name?: string;
     last_name?: string;
     era_commons_id?: string;
-    nih_ned_id?: string;
     email?: string;
     linkedin?: string;
     public_email?: string;
@@ -34,6 +33,12 @@ interface IUserAttributes {
     locale?: string;
     newsletter_email?: string;
     newsletter_subscription_status?: SubscriptionStatus;
+    newsletter_dataset_subscription_status?: SubscriptionStatus;
+    location_country?: string;
+    location_state?: string;
+    website?: string;
+    areas_of_interest?: string[];
+    is_public?: boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -57,6 +62,11 @@ class UserModel extends Model<IUserAttributes, IUserInput> implements IUserAttri
     public public_email?: string;
     public external_individual_email?: string;
     public linkedin?: string;
+    public location_country?: string;
+    public location_state?: string;
+    public website?: string;
+    public areas_of_interest?: string[];
+    public is_public?: boolean;
 }
 
 UserModel.init(
@@ -88,31 +98,25 @@ UserModel.init(
         first_name: {
             type: DataTypes.CITEXT,
             validate: {
-                len: [1, 35],
+                len: [1, 70],
                 is: NAME_REGEX,
             },
         },
         last_name: {
             type: DataTypes.CITEXT,
             validate: {
-                len: [1, 35],
+                len: [1, 70],
                 is: NAME_REGEX,
             },
         },
         era_commons_id: {
             type: DataTypes.STRING,
         },
-        nih_ned_id: {
-            type: DataTypes.STRING,
-            validate: {
-                isAlpha: true,
-            },
-        },
         commercial_use_reason: {
             type: DataTypes.STRING,
             allowNull: true,
             validate: {
-                validate: (value: string) => value === '' || NAME_REGEX.test(value),
+                validate: (value: string) => value === '' || NAME_REGEX.test(value.trim()),
             },
         },
         email: {
@@ -149,7 +153,7 @@ UserModel.init(
             type: DataTypes.CITEXT,
             allowNull: true,
             validate: {
-                validate: (value: string) => value === '' || NAME_REGEX.test(value),
+                validate: (value: string) => value === '' || NAME_REGEX.test(value.trim()),
             },
         },
         public_email: {
@@ -232,6 +236,44 @@ UserModel.init(
             allowNull: true,
             validate: {
                 isAlpha: true,
+            },
+        },
+        newsletter_dataset_subscription_status: {
+            type: DataTypes.ENUM(
+                SubscriptionStatus.SUBSCRIBED,
+                SubscriptionStatus.UNSUBSCRIBED,
+                SubscriptionStatus.FAILED,
+            ),
+            allowNull: true,
+            validate: {
+                isAlpha: true,
+            },
+        },
+        location_country: {
+            type: DataTypes.CITEXT,
+            allowNull: true,
+            validate: {
+                validate: (value: string) => value === '' || NAME_REGEX.test(value.trim()),
+            },
+        },
+        location_state: {
+            type: DataTypes.CITEXT,
+            allowNull: true,
+            validate: {
+                validate: (value: string) => value === '' || NAME_REGEX.test(value.trim()),
+            },
+        },
+        website: {
+            type: DataTypes.TEXT,
+            allowNull: true,
+            validate: { isUrl: true },
+        },
+        areas_of_interest: DataTypes.ARRAY(DataTypes.CITEXT),
+        is_public: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+            validate: {
+                isBoolean: true,
             },
         },
     },

@@ -6,9 +6,7 @@ export interface UserValidator {
 }
 
 const includeUserValidator = (payload: IUserInput): boolean =>
-    (payload.era_commons_id ||
-        payload.nih_ned_id ||
-        (payload.external_individual_fullname && payload.external_individual_email)) &&
+    (payload.era_commons_id || (payload.external_individual_fullname && payload.external_individual_email)) &&
     payload.roles?.length &&
     payload.portal_usages?.length > 0;
 

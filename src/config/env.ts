@@ -20,3 +20,5 @@ export const adminRoleName = process.env.ADMIN_ROLE_NAME || 'admin';
 
 export const smartsheetId = process.env.SMARTSHEET_ID;
 export const smartsheetToken = process.env.SMARTSHEET_TOKEN;
+
+export const personaURL = process.env.PERSONA_URL || 'not supported';

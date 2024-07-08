@@ -74,7 +74,6 @@ describe('User Validator', () => {
             };
 
             const userWithEraCommonsId = { ...inputUser, era_commons_id: 'era_commons_id' };
-            const userWithNihNedId = { ...inputUser, nih_ned_id: 'nih_ned_id' };
             const userWithExternalIds = {
                 ...inputUser,
                 external_individual_fullname: 'external_individual_fullname',
@@ -82,7 +81,6 @@ describe('User Validator', () => {
             };
 
             expect(getUserValidator(Realm.INCLUDE)(userWithEraCommonsId)).toBeTruthy();
-            expect(getUserValidator(Realm.INCLUDE)(userWithNihNedId)).toBeTruthy();
             expect(getUserValidator(Realm.INCLUDE)(userWithExternalIds)).toBeTruthy();
         });
 
