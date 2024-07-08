@@ -116,7 +116,7 @@ UserModel.init(
             type: DataTypes.STRING,
             allowNull: true,
             validate: {
-                validate: (value: string) => value === '' || NAME_REGEX.test(value),
+                validate: (value: string) => value === '' || NAME_REGEX.test(value.trim()),
             },
         },
         email: {
@@ -153,7 +153,7 @@ UserModel.init(
             type: DataTypes.CITEXT,
             allowNull: true,
             validate: {
-                validate: (value: string) => value === '' || NAME_REGEX.test(value),
+                validate: (value: string) => value === '' || NAME_REGEX.test(value.trim()),
             },
         },
         public_email: {
@@ -253,14 +253,14 @@ UserModel.init(
             type: DataTypes.CITEXT,
             allowNull: true,
             validate: {
-                validate: (value: string) => value === '' || NAME_REGEX.test(value),
+                validate: (value: string) => value === '' || NAME_REGEX.test(value.trim()),
             },
         },
         location_state: {
             type: DataTypes.CITEXT,
             allowNull: true,
             validate: {
-                validate: (value: string) => value === '' || NAME_REGEX.test(value),
+                validate: (value: string) => value === '' || NAME_REGEX.test(value.trim()),
             },
         },
         website: {

@@ -1,4 +1,3 @@
-/* eslint-disable complexity */
 /* eslint-disable no-console */
 import { parseString } from '@fast-csv/parse';
 import validator from 'validator';
@@ -46,21 +45,9 @@ export type Persona = {
 };
 
 export const validateUniqPersonas = (personas: Persona[]): boolean => {
-    const result = new Map();
-    personas.reduce((map, obj) => {
-        if (map.has(obj.egoId)) {
-            map.set(obj.egoId, map.get(obj.egoId).push(obj));
-        } else {
-            map.set(obj.egoId, [obj]);
-        }
-        return map;
-    }, result);
-    const values = Array.from(result.values()).filter((l) => l.length !== 1);
-    if (values.length > 0) {
-        console.warn('OOPS duplicate persona');
-        return false;
-    }
-    return true;
+    const ids = personas.map((p) => p.egoId);
+    const uniqIds = new Set(ids);
+    return ids.length === uniqIds.size;
 };
 
 export const readCsv = (csvContent: string): Promise<Persona[]> =>
@@ -106,12 +93,11 @@ export const convertToPersona = (p: any): Persona => ({
     firstName: p.firstName === '' ? null : (p.firstName as string).trim(),
     lastName: p.lastName === '' ? null : (p.lastName as string).trim(),
     role: p.role === '' ? [] : p.role.split(','),
-    loginEmail:
-        p.loginEmail === ''
-            ? null
-            : validator.isURL((p.loginEmail as string).trim())
-            ? (p.loginEmail as string).trim()
-            : null,
+    loginEmail: ((email) => {
+        if (email === '') return null;
+        const trimEmail = email.trim();
+        return validator.isEmail(trimEmail) ? trimEmail : null;
+    })(p.loginEmail),
     institution: p.institution === '' ? null : (p.institution as string).trim(),
     department: p.department,
     jobTitle: p.jobTitle,
@@ -121,23 +107,24 @@ export const convertToPersona = (p: any): Persona => ({
     state: p.state === '' ? null : (p.state as string).trim(),
     country: p.country === '' ? null : (p.country as string).trim(),
     phone: p.phone,
-    institutionalEmail:
-        p.institutionalEmail === ''
-            ? null
-            : validator.isURL((p.institutionalEmail as string).trim())
-            ? (p.institutionalEmail as string).trim()
-            : null,
+    institutionalEmail: ((email) => {
+        if (email === '') return null;
+        const trimEmail = email.trim();
+        return validator.isEmail(trimEmail) ? trimEmail : null;
+    })(p.institutionalEmail),
     eraCommonsID: p.eraCommonsID === '' ? null : (p.eraCommonsID as string).trim(),
-    website:
-        p.website === '' ? null : validator.isURL((p.website as string).trim()) ? (p.website as string).trim() : null,
+    website: ((website) => {
+        if (website === '') return null;
+        const trimWebsite = website.trim();
+        return validator.isURL(trimWebsite) ? trimWebsite : null;
+    })(p.website),
     twitter: p.twitter,
     orchid: p.orchid,
-    linkedin:
-        p.linkedin === ''
-            ? null
-            : LINKEDIN_REGEX.test((p.linkedin as string).trim())
-            ? (p.linkedin as string).trim()
-            : null,
+    linkedin: ((linkedin) => {
+        if (linkedin === '') return null;
+        const trimLinkedin = linkedin.trim();
+        return LINKEDIN_REGEX.test(trimLinkedin) ? trimLinkedin : null;
+    })(p.linkedin),
     googleScholarId: p.googleScholarId,
     github: p.github,
     facebook: p.facebook,
