@@ -54,7 +54,7 @@ const sendSubscriptionPostRequest = async (payload: NewsletterPayload): Promise<
         }),
     });
 
-    if (!response.ok) {
+    if (response.status !== 200) {
         const responseData = await response.text();
         console.error(`Failed to subscribe: ${responseData}`);
         return SubscriptionStatus.FAILED;
@@ -102,7 +102,7 @@ const sendGetSubscriptionRequest = async (email: string, type: NewsletterType): 
         },
     });
 
-    if (!response.ok) {
+    if (response.status !== 200) {
         const responseData = await response.text();
         console.error(`Failed to fetch: ${responseData}`);
         return SubscriptionStatus.FAILED;
