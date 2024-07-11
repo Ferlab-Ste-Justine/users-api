@@ -5,32 +5,36 @@ import { refreshNewsletterStatus, subscribeNewsletter, unsubscribeNewsletter } f
 
 const newsletterRouter = Router();
 
-newsletterRouter.put('/refresh', async (req, res, next) => {
+newsletterRouter.put('/refresh/:newsletter_type?', async (req, res, next) => {
     try {
         const keycloak_id = req['kauth']?.grant?.access_token?.content?.sub;
-        const result = await refreshNewsletterStatus(keycloak_id);
+        const newsletter_type = req.params.newsletter_type;
+
+        const result = await refreshNewsletterStatus(keycloak_id, newsletter_type);
         res.status(StatusCodes.OK).send(result);
     } catch (e) {
         next(e);
     }
 });
 
-newsletterRouter.put('/subscribe', async (req, res, next) => {
+newsletterRouter.put('/subscribe/:newsletter_type?', async (req, res, next) => {
     try {
         const keycloak_id = req['kauth']?.grant?.access_token?.content?.sub;
-        const result = await subscribeNewsletter(keycloak_id, req.body.newsletter_email);
+        const newsletter_type = req.params.newsletter_type;
 
-        console.log(result);
+        const result = await subscribeNewsletter(keycloak_id, req.body.newsletter_email, newsletter_type);
+
         res.status(StatusCodes.OK).send(result);
     } catch (e) {
         next(e);
     }
 });
 
-newsletterRouter.put('/unsubscribe', async (req, res, next) => {
+newsletterRouter.put('/unsubscribe/:newsletter_type?', async (req, res, next) => {
     try {
         const keycloak_id = req['kauth']?.grant?.access_token?.content?.sub;
-        const result = await unsubscribeNewsletter(keycloak_id);
+        const newsletter_type = req.params.newsletter_type;
+        const result = await unsubscribeNewsletter(keycloak_id, newsletter_type);
         res.status(StatusCodes.OK).send(result);
     } catch (e) {
         next(e);

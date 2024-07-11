@@ -22,3 +22,8 @@ export const smartsheetId = process.env.SMARTSHEET_ID;
 export const smartsheetToken = process.env.SMARTSHEET_TOKEN;
 
 export const personaURL = process.env.PERSONA_URL || 'not supported';
+
+export const mailchimpApiKey = process.env.MAILCHIMP_API_KEY || '';
+export const mailchimpUsername = process.env.MAILCHIMP_USERNAME || '';
+export const mailchimpKidsfirstListId = process.env.MAILCHIMP_KF_LIST_ID || '';
+export const mailchimpKidsfirstDatasetListId = process.env.MAILCHIMP_KF_DATASET_LIST_ID || '';
