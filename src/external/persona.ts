@@ -154,6 +154,7 @@ export const createOrUpdate = async (payload: Persona): Promise<string> => {
                 affiliation: payload.institution,
                 consent_date: new Date('2021-11-22'),
                 accepted_terms: payload.acceptedTerms,
+                understand_disclaimer: payload.acceptedTerms,
                 completed_registration: payload.acceptedTerms && payload.isActive,
                 deleted: !payload.isActive,
                 newsletter_email: payload.acceptedKfOptIn || payload.acceptedDatasetSub ? payload.loginEmail : null,
