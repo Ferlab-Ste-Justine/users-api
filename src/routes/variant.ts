@@ -1,11 +1,13 @@
 import { Request, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
+import Realm from '../config/realm';
+import { keycloakRealm } from '../config/env';
 import { addNewEntry, getEntriesByUniqueIdsAndOrganizations } from '../db/dal/variant';
 
 const CLIN_GENETICIAN_ROLE = 'clin_genetician';
 
-const EMPTY_PROPERTIES = { flags: [] };
+const EMPTY_PROPERTIES = { };
 
 interface UserInfo {
     authorId: string,
@@ -20,7 +22,7 @@ function getUserInfo(request: Request): UserInfo {
     return { authorId, userRoles, userOrganizations };
 }
 
-function validateCreateOrDelete(userInfo: UserInfo, organization_id: string) {
+function validateCreate(userInfo: UserInfo, organization_id: string) {
     return userInfo.userRoles.indexOf(CLIN_GENETICIAN_ROLE) > -1 && userInfo.userOrganizations.indexOf(organization_id) > -1;
 }
 
@@ -32,14 +34,18 @@ const variantRouter = Router();
 
 variantRouter.post('/:unique_id/:organization_id', async (req, res, next) => {
     try {
+        if (keycloakRealm !== Realm.CLIN) {
+            return res.sendStatus(StatusCodes.NOT_IMPLEMENTED);
+        }
+        
         const userInfo = getUserInfo(req);
-        const canCreateOrDelete = validateCreateOrDelete(userInfo, req?.params?.organization_id);
+        const canCreate = validateCreate(userInfo, req?.params?.organization_id);
 
-        if (canCreateOrDelete) {
-            const dbResponse = await addNewEntry(req?.params?.unique_id, req?.params?.organization_id, userInfo.authorId, req?.body);
-            res.status(StatusCodes.CREATED).send(dbResponse);
+        if (canCreate) {
+            const dbResponse = await addNewEntry(req?.params?.unique_id, req?.params?.organization_id, userInfo.authorId, req?.body || EMPTY_PROPERTIES);
+            return res.status(StatusCodes.CREATED).send(dbResponse);
         } else {
-            res.sendStatus(StatusCodes.FORBIDDEN);
+            return res.sendStatus(StatusCodes.FORBIDDEN);
         }
     } catch (e) {
         next(e);
@@ -48,34 +54,31 @@ variantRouter.post('/:unique_id/:organization_id', async (req, res, next) => {
 
 variantRouter.get('/', async (req, res, next) => {
     try {
+        if (keycloakRealm !== Realm.CLIN) {
+            return res.sendStatus(StatusCodes.NOT_IMPLEMENTED);
+        }
+
         const userInfo = getUserInfo(req);
         const canGet = validateGet(userInfo);
 
         let dbResponse = [];
+        let uniqueIds = [];
 
-        const uniqueIds = Array.isArray(req.query?.unique_id) ? req.query?.unique_id as string[] : [req.query?.unique_id as string];
+        if (Array.isArray(req.query?.unique_id)) {
+            uniqueIds.push(...req.query.unique_id);
+        } else if (typeof req.query?.unique_id === 'string') {
+            uniqueIds.push(req.query?.unique_id);
+        }
 
-        if (canGet) {
+        if (canGet && uniqueIds.length > 0) {
             dbResponse = await getEntriesByUniqueIdsAndOrganizations(uniqueIds, userInfo.userOrganizations);
-        }
-
-        res.status(StatusCodes.OK).send(dbResponse);
-    } catch (e) {
-        next(e);
-    }
-});
-
-variantRouter.delete('/:unique_id/:organization_id', async (req, res, next) => {
-    try {
-        const userInfo = getUserInfo(req);
-        const canCreateOrDelete = validateCreateOrDelete(userInfo, req?.params?.organization_id);
-
-        if (canCreateOrDelete) {
-            const dbResponse = await addNewEntry(req?.params?.unique_id, req?.params?.organization_id, userInfo.authorId, EMPTY_PROPERTIES);
-            res.status(StatusCodes.CREATED).send(dbResponse);
+            return res.status(StatusCodes.OK).send(dbResponse);
+        } else if (!canGet) {
+            return res.sendStatus(StatusCodes.FORBIDDEN);
         } else {
-            res.sendStatus(StatusCodes.FORBIDDEN);
+            return res.sendStatus(StatusCodes.BAD_REQUEST);
         }
+
     } catch (e) {
         next(e);
     }
