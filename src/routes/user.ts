@@ -25,6 +25,7 @@ interface CustomReqQuery {
     roles?: string;
     dataUses?: string;
     researchDomains?: string;
+    areasOfInterest?: string;
 }
 
 /**
@@ -45,6 +46,7 @@ usersRouter.get('/search', async (req: Request<any, any, any, CustomReqQuery>, r
         const roles = req.query.roles ? req.query.roles.split(',') : [];
         const dataUses = req.query.dataUses ? req.query.dataUses.split(',') : [];
         const researchDomains = req.query.researchDomains?.split(',') || [];
+        const areasOfInterest = req.query.areasOfInterest?.split(',') || [];
 
         let sorts: Order = [];
         if (req.query.sort) {
@@ -62,6 +64,7 @@ usersRouter.get('/search', async (req: Request<any, any, any, CustomReqQuery>, r
             roles,
             dataUses,
             researchDomains,
+            areasOfInterest,
         });
         res.status(StatusCodes.OK).send(result);
     } catch (e) {
