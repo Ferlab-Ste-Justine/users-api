@@ -50,12 +50,26 @@ export interface IUserOutput extends IUserAttributes {}
 class UserModel extends Model<IUserAttributes, IUserInput> implements IUserAttributes {
     public id: number;
     public keycloak_id: string;
+    public first_name?: string;
+    public last_name?: string;
+    public era_commons_id?: string;
+    public email?: string;
+    public external_individual_fullname?: string;
+    public profile_image_key?: string;
+    public affiliation?: string;
+    public research_domains?: string[];
+    public research_area_description?: string;
+    public locale?: string;
+    public newsletter_email?: string;
+    public newsletter_subscription_status?: SubscriptionStatus;
+    public newsletter_dataset_subscription_status?: SubscriptionStatus;
     public commercial_use_reason: string;
     public accepted_terms: boolean;
     public understand_disclaimer: boolean;
     public completed_registration: boolean;
     public creation_date: Date;
     public updated_date: Date;
+    public consent_date?: Date;
     public deleted: boolean;
     public roles: string[];
     public portal_usages: string[];
