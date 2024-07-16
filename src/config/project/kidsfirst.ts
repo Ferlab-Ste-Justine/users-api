@@ -1,8 +1,7 @@
+import defaultConfig from './default';
+
 const cleanedUserAttributes = [
-    'id',
     'keycloak_id',
-    'creation_date',
-    'updated_date',
     'first_name',
     'last_name',
     'linkedin',
@@ -13,9 +12,6 @@ const cleanedUserAttributes = [
     'location_state',
     'areas_of_interest',
     'locale',
-    'newsletter_email',
-    'newsletter_subscription_status',
-    'newsletter_dataset_subscription_status',
 ];
 
 const roleOptions = [
@@ -37,7 +33,40 @@ const roleOptions = [
     },
 ];
 
+const areaOfInterestOptions = [
+    'Adolescent Idiopathic Scoliosis',
+    'Bladder Exstrophy-Epispadias Complex',
+    'Congenital Diaphragmatic Hernia',
+    'Congenital Heart Defects',
+    'Cornelia de Lange Syndrome',
+    'Craniofacial Microsomia',
+    'Disorders of Sex Development',
+    'Enchondromatosis',
+    'Esophageal Atresia & Tracheoesophageal',
+    'Ewing Sarcoma - Genetic Risk',
+    'Familial Leukemia',
+    'Hemangiomas (PHACE)',
+    'Intersections of Cancer & Structural Birth Defects',
+    'Kidney and Urinary Tract Defects',
+    'Laterality Birth Defects',
+    'Leukemia & Heart Defects in Down Syndrome',
+    'Microtia in Hispianic Populations',
+    'Myeloid Malignancies',
+    'Neuroblastoma',
+    'Nonsyndromic Craniosynostosis',
+    'Novel Cancer Susceptibility in Families (from BASIC3)',
+    'Orofacial Cleft - African & Asian Ancestries',
+    'Orofacial Cleft - European Ancestry',
+    'Orofacial Cleft - Latin American Ancestry',
+    'Osteosarcoma',
+    'Pediatric Cancer Studies',
+    'Syndromic Cranial Dysinnervation',
+    'T-cell Acute Lymphoblastic Leukemia (ALL)',
+].map((area) => ({ value: area.toLowerCase(), label: area }));
+
 export default {
+    ...defaultConfig,
     cleanedUserAttributes,
     roleOptions,
+    areaOfInterestOptions,
 };

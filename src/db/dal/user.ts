@@ -4,8 +4,9 @@ import { StatusCodes } from 'http-status-codes';
 import { Op, Order } from 'sequelize';
 import { uuid } from 'uuidv4';
 
-import { profileImageBucket } from '../../config/env';
+import { keycloakRealm, profileImageBucket } from '../../config/env';
 import config from '../../config/project';
+import Realm from '../../config/realm';
 import { UserValidator } from '../../utils/userValidator';
 import UserModel, { IUserInput, IUserOutput } from '../models/User';
 
@@ -75,6 +76,7 @@ export const searchUsers = async ({
     roles,
     dataUses,
     researchDomains,
+    areasOfInterest,
 }: {
     pageSize: number;
     pageIndex: number;
@@ -83,6 +85,7 @@ export const searchUsers = async ({
     roles: string[];
     dataUses: string[];
     researchDomains: string[];
+    areasOfInterest: string[];
 }) => {
     const matchClauses = createMatchClauses(match);
     const filters = [
@@ -100,6 +103,11 @@ export const searchUsers = async ({
             filterArray: researchDomains,
             filterName: 'research_domains',
             filterOptions: config.researchDomainOptions?.map((option) => option.value) || [],
+        },
+        {
+            filterArray: areasOfInterest,
+            filterName: 'areas_of_interest',
+            filterOptions: config.areaOfInterestOptions?.map((option) => option.value) || [],
         },
     ];
     const andClauses = createAndClauses(filters);
@@ -190,11 +198,15 @@ export const isUserExists = async (
 
 export const createUser = async (keycloak_id: string, payload: IUserInput): Promise<IUserOutput> => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { newsletter_email, newsletter_subscription_status, ...rest } = payload;
+    const { newsletter_email, newsletter_subscription_status, is_public, ...rest } = payload;
+
+    // KF is the only project that have public/private profiles
+    const is_public_depending_on_project = keycloakRealm === Realm.KF ? false : true;
 
     const newUser = await UserModel.create({
         ...rest,
         keycloak_id: keycloak_id,
+        is_public: is_public_depending_on_project,
         creation_date: new Date(),
         updated_date: new Date(),
     });
@@ -235,6 +247,7 @@ export const deleteUser = async (keycloak_id: string): Promise<void> => {
             newsletter_email: null,
             newsletter_subscription_status: null,
             deleted: true,
+            is_public: false,
         },
         {
             where: {
