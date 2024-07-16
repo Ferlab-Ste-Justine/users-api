@@ -317,3 +317,5 @@ export const retrieveUserCreatedSince = async (date: string): Promise<number> =>
     });
     return result;
 };
+
+export const exportAllUsers = async (): Promise<UserModel[]> => await UserModel.findAll();

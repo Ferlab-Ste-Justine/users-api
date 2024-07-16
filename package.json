@@ -23,6 +23,7 @@
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.312.0",
+        "@fast-csv/format": "^5.0.0",
         "@fast-csv/parse": "^5.0.0",
         "@types/pg-format": "^1.0.2",
         "@types/validator": "^13.7.1",
