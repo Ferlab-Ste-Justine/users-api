@@ -8,6 +8,7 @@ CREATE TABLE variants (
     properties JSONB NOT NULL DEFAULT '{}'::JSONB
 );
 ALTER TABLE variants ADD PRIMARY KEY (id);
+CREATE INDEX variants_unique_id_idx ON variants (unique_id);
 
 -- Down Migration
 DROP TABLE variants;
