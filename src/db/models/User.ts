@@ -300,6 +300,7 @@ UserModel.init(
                 instance.public_email = instance.public_email || null;
                 instance.external_individual_email = instance.external_individual_email || null;
                 instance.linkedin = instance.linkedin || null;
+                instance.website = instance.website || null;
             },
         },
     },
