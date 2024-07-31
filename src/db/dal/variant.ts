@@ -6,7 +6,8 @@ export const addNewEntry = async function (uniqueId: string, organizationId: str
         unique_id: uniqueId,
         organization_id: organizationId,
         author_id: authorId,
-        properties
+        properties,
+        timestamp: new Date()
     });
 }
 
