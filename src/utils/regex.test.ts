@@ -1,4 +1,4 @@
-import { NAME_REGEX } from './constants';
+import { NAME_REGEX, SET_FILTER_NAME_REGEX } from './constants';
 
 describe('NAME_REGEX', () => {
     it('should allow alphanumeric lower and uppercase', () => {
@@ -45,5 +45,42 @@ describe('NAME_REGEX', () => {
         expect(NAME_REGEX.test('a]a')).toBeFalsy();
         expect(NAME_REGEX.test('a\\a')).toBeFalsy();
         expect(NAME_REGEX.test('a~a')).toBeFalsy();
+    });
+});
+
+describe('SET_NAME_REGEX', () => {
+    it('should allow alphanumeric lower and uppercase', () => {
+        expect(SET_FILTER_NAME_REGEX.test('ThisIsAlphanumeric123')).toBeTruthy();
+    });
+    it(`should allow / @ ( ) ' - _ , . space`, () => {
+        expect(SET_FILTER_NAME_REGEX.test(`( ) ' - _ , . [ ] : |`)).toBeTruthy();
+    });
+    it(`should not allow ; { } ^ ! " # $ % & * + < = > ? \\ ~`, () => {
+        expect(SET_FILTER_NAME_REGEX.test('a;a')).toBeFalsy();
+        expect(SET_FILTER_NAME_REGEX.test('a{a')).toBeFalsy();
+        expect(SET_FILTER_NAME_REGEX.test('a}a')).toBeFalsy();
+        expect(SET_FILTER_NAME_REGEX.test('a^a')).toBeFalsy();
+        expect(SET_FILTER_NAME_REGEX.test('a!a')).toBeFalsy();
+        expect(SET_FILTER_NAME_REGEX.test('a"a')).toBeFalsy();
+        expect(SET_FILTER_NAME_REGEX.test('a#a')).toBeFalsy();
+        expect(SET_FILTER_NAME_REGEX.test('a$a')).toBeFalsy();
+        expect(SET_FILTER_NAME_REGEX.test('a%a')).toBeFalsy();
+        expect(SET_FILTER_NAME_REGEX.test('a&a')).toBeFalsy();
+        expect(SET_FILTER_NAME_REGEX.test('a*a')).toBeFalsy();
+        expect(SET_FILTER_NAME_REGEX.test('a+a')).toBeFalsy();
+        expect(SET_FILTER_NAME_REGEX.test('a<a')).toBeFalsy();
+        expect(SET_FILTER_NAME_REGEX.test('a=a')).toBeFalsy();
+        expect(SET_FILTER_NAME_REGEX.test('a>a')).toBeFalsy();
+        expect(SET_FILTER_NAME_REGEX.test('a?a')).toBeFalsy();
+        expect(SET_FILTER_NAME_REGEX.test('a\\a')).toBeFalsy();
+        expect(SET_FILTER_NAME_REGEX.test('a~a')).toBeFalsy();
+    });
+    it(`should not allow more than 200 character names`, () => {
+        expect(
+            SET_FILTER_NAME_REGEX.test(
+                'aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa ' +
+                    'aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa',
+            ),
+        ).toBeFalsy();
     });
 });

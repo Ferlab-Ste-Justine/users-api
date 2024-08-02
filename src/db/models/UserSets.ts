@@ -1,6 +1,6 @@
 import { DataTypes, Model } from 'sequelize';
 
-import { NAME_REGEX, UUID_VERSION } from '../../utils/constants';
+import { SET_FILTER_NAME_REGEX, UUID_VERSION } from '../../utils/constants';
 import sequelizeConnection from '../config';
 
 interface IUserSetAttributes {
@@ -50,7 +50,7 @@ UserSetModel.init(
             type: DataTypes.STRING,
             allowNull: false,
             validate: {
-                is: NAME_REGEX,
+                is: SET_FILTER_NAME_REGEX,
             },
         },
         sharedpublicly: {
