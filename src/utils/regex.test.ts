@@ -49,13 +49,23 @@ describe('NAME_REGEX', () => {
 });
 
 describe('SET_NAME_REGEX', () => {
-    it('should allow alphanumeric lower and uppercase', () => {
+    it('should allow these characters', () => {
         expect(SET_FILTER_NAME_REGEX.test('ThisIsAlphanumeric123')).toBeTruthy();
+        expect(SET_FILTER_NAME_REGEX.test(`set_1 (HP:123.1) | [Mondo:1,23-1]`)).toBeTruthy();
+        expect(SET_FILTER_NAME_REGEX.test('a(a')).toBeTruthy();
+        expect(SET_FILTER_NAME_REGEX.test('a)a')).toBeTruthy();
+        expect(SET_FILTER_NAME_REGEX.test("a'a")).toBeTruthy();
+        expect(SET_FILTER_NAME_REGEX.test('a-a')).toBeTruthy();
+        expect(SET_FILTER_NAME_REGEX.test('a_a')).toBeTruthy();
+        expect(SET_FILTER_NAME_REGEX.test('a,a')).toBeTruthy();
+        expect(SET_FILTER_NAME_REGEX.test('a.a')).toBeTruthy();
+        expect(SET_FILTER_NAME_REGEX.test('a[a')).toBeTruthy();
+        expect(SET_FILTER_NAME_REGEX.test('a]a')).toBeTruthy();
+        expect(SET_FILTER_NAME_REGEX.test('a:a')).toBeTruthy();
+        expect(SET_FILTER_NAME_REGEX.test('a|a')).toBeTruthy();
     });
-    it(`should allow / @ ( ) ' - _ , . space`, () => {
-        expect(SET_FILTER_NAME_REGEX.test(`( ) ' - _ , . [ ] : |`)).toBeTruthy();
-    });
-    it(`should not allow ; { } ^ ! " # $ % & * + < = > ? \\ ~`, () => {
+
+    it(`should not allow / @ ; { } ^ ! " # $ % & * + < = > ? \\ ~`, () => {
         expect(SET_FILTER_NAME_REGEX.test('a;a')).toBeFalsy();
         expect(SET_FILTER_NAME_REGEX.test('a{a')).toBeFalsy();
         expect(SET_FILTER_NAME_REGEX.test('a}a')).toBeFalsy();
@@ -74,13 +84,10 @@ describe('SET_NAME_REGEX', () => {
         expect(SET_FILTER_NAME_REGEX.test('a?a')).toBeFalsy();
         expect(SET_FILTER_NAME_REGEX.test('a\\a')).toBeFalsy();
         expect(SET_FILTER_NAME_REGEX.test('a~a')).toBeFalsy();
+        expect(SET_FILTER_NAME_REGEX.test('a@a')).toBeFalsy();
+        expect(SET_FILTER_NAME_REGEX.test('a/a')).toBeFalsy();
     });
     it(`should not allow more than 200 character names`, () => {
-        expect(
-            SET_FILTER_NAME_REGEX.test(
-                'aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa ' +
-                    'aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa',
-            ),
-        ).toBeFalsy();
+        expect(SET_FILTER_NAME_REGEX.test('a'.repeat(200))).toBeFalsy();
     });
 });
