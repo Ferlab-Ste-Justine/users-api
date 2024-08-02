@@ -65,7 +65,7 @@ describe('SET_NAME_REGEX', () => {
         expect(SET_FILTER_NAME_REGEX.test('a|a')).toBeTruthy();
     });
 
-    it(`should not allow / @ ; { } ^ ! " # $ % & * + < = > ? \\ ~`, () => {
+    it(`should not allow these characters`, () => {
         expect(SET_FILTER_NAME_REGEX.test('a;a')).toBeFalsy();
         expect(SET_FILTER_NAME_REGEX.test('a{a')).toBeFalsy();
         expect(SET_FILTER_NAME_REGEX.test('a}a')).toBeFalsy();
