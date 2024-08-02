@@ -1,6 +1,6 @@
 import { DataTypes, Model } from 'sequelize';
 
-import { NAME_REGEX, UUID_VERSION } from '../../utils/constants';
+import { SET_FILTER_NAME_REGEX, UUID_VERSION } from '../../utils/constants';
 import { handleUniqueName } from '../../utils/savedFilters';
 import sequelizeConnection from '../config';
 
@@ -53,7 +53,7 @@ SavedFilterModel.init(
         title: {
             type: DataTypes.TEXT,
             validate: {
-                is: NAME_REGEX,
+                is: SET_FILTER_NAME_REGEX,
             },
         },
         tag: DataTypes.TEXT,
