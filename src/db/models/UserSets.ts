@@ -9,7 +9,7 @@ interface IUserSetAttributes {
     content: any;
     alias: string;
     sharedpublicly: boolean;
-    isPhantomManifest: boolean;
+    is_phantom_manifest: boolean;
     creation_date: Date;
     updated_date: Date;
 }
@@ -25,7 +25,7 @@ class UserSetModel extends Model<IUserSetAttributes, IUserSetsInput> implements 
     public content: any;
     public alias: string;
     public sharedpublicly: boolean;
-    public isPhantomManifest: boolean;
+    public is_phantom_manifest: boolean;
     public creation_date: Date;
     public updated_date: Date;
 }
@@ -63,7 +63,7 @@ UserSetModel.init(
                 isBoolean: true,
             },
         },
-        isPhantomManifest: {
+        is_phantom_manifest: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: false,
