@@ -10,11 +10,9 @@ const sanitizeInputPayload = (payload: IUserSetsInput) => {
     return rest;
 };
 
-export const getById = async (keycloak_id: string, id: string): Promise<IUserSetsOutput> => {
+export const getById = async (id: string): Promise<IUserSetsOutput> => {
     const filter = await UserSetModel.findOne({
-        where: {
-            [Op.and]: [{ keycloak_id }, { id }],
-        },
+        where: { id },
     });
 
     if (!filter) {
