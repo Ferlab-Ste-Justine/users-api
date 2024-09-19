@@ -88,6 +88,7 @@ describe('SET_NAME_REGEX', () => {
         expect(SET_FILTER_NAME_REGEX.test('a/a')).toBeFalsy();
     });
     it(`should not allow more than 200 character names`, () => {
-        expect(SET_FILTER_NAME_REGEX.test('a'.repeat(200))).toBeFalsy();
+        //201 characters or more would not pass
+        expect(SET_FILTER_NAME_REGEX.test('a'.repeat(201))).toBeFalsy();
     });
 });
