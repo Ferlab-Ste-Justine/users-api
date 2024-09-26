@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import Realm from '../config/realm';
 import { keycloakRealm } from '../config/env';
-import { addNewEntry, getEntriesByUniqueIdsAndOrganizations, getEntriesByProperties } from '../db/dal/variant';
+import { addNewEntry, getEntriesByUniqueIdsAndOrganizations, getEntriesByPropertiesFlags } from '../db/dal/variant';
 
 const CLIN_GENETICIAN_ROLE = 'clin_genetician';
 
@@ -104,7 +104,7 @@ variantRouter.get('/filter', async (req, res, next) => {
         }
 
         if (canGet && flags.length > 0) {
-            dbResponse = await getEntriesByProperties({flags: flags}, userInfo.userOrganizations);
+            dbResponse = await getEntriesByPropertiesFlags(flags, userInfo.userOrganizations);
             return res.status(StatusCodes.OK).send(dbResponse.map(r => r.unique_id));
         } else if (!canGet) {
             return res.sendStatus(StatusCodes.FORBIDDEN);
