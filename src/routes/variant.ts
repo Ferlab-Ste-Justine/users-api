@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import Realm from '../config/realm';
 import { keycloakRealm } from '../config/env';
-import { addNewEntry, getEntriesByUniqueIdsAndOrganizations } from '../db/dal/variant';
+import { addNewEntry, getEntriesByUniqueIdsAndOrganizations, getEntriesByProperties } from '../db/dal/variant';
 
 const CLIN_GENETICIAN_ROLE = 'clin_genetician';
 
@@ -37,7 +37,7 @@ variantRouter.post('/:unique_id/:organization_id', async (req, res, next) => {
         if (keycloakRealm !== Realm.CLIN) {
             return res.sendStatus(StatusCodes.NOT_IMPLEMENTED);
         }
-        
+
         const userInfo = getUserInfo(req);
         const canCreate = validateCreate(userInfo, req?.params?.organization_id);
 
@@ -79,6 +79,38 @@ variantRouter.get('/', async (req, res, next) => {
             return res.sendStatus(StatusCodes.BAD_REQUEST);
         }
 
+    } catch (e) {
+        next(e);
+    }
+});
+
+variantRouter.get('/filter', async (req, res, next) => {
+    try {
+        if (keycloakRealm !== Realm.CLIN) {
+            return res.sendStatus(StatusCodes.NOT_IMPLEMENTED);
+        }
+
+        const userInfo = getUserInfo(req);
+        const canGet = validateGet(userInfo);
+
+        let dbResponse = [];
+        let flags = [];
+
+        const flagsParam = req.query?.flag;
+        if (Array.isArray(flagsParam)) {
+            flags.push(...flagsParam);
+        } else if (typeof flagsParam === 'string') {
+            flags.push(flagsParam);
+        }
+
+        if (canGet && flags.length > 0) {
+            dbResponse = await getEntriesByProperties({flags: flags}, userInfo.userOrganizations);
+            return res.status(StatusCodes.OK).send(dbResponse.map(r => r.unique_id));
+        } else if (!canGet) {
+            return res.sendStatus(StatusCodes.FORBIDDEN);
+        } else {
+            return res.sendStatus(StatusCodes.BAD_REQUEST);
+        }
     } catch (e) {
         next(e);
     }
