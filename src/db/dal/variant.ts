@@ -24,3 +24,18 @@ export const getEntriesByUniqueIdsAndOrganizations = async function (uniqueIds: 
         }
     });
 }
+
+export const getEntriesByProperties = async function (prop: object, organizationIds: string[]) {
+    return await VariantModel.findAll({
+        attributes: ['unique_id'],
+        group: ['unique_id'],
+        where: {
+            properties: {
+                [Op.contains]: prop
+            },
+            organization_id: {
+                [Op.in]: organizationIds
+            }
+        }
+    });
+}
