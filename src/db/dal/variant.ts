@@ -25,14 +25,20 @@ export const getEntriesByUniqueIdsAndOrganizations = async function (uniqueIds: 
     });
 }
 
-export const getEntriesByProperties = async function (prop: object, organizationIds: string[]) {
+export const getEntriesByPropertiesFlags = async function (flags: string[], organizationIds: string[]) {
     return await VariantModel.findAll({
         attributes: ['unique_id'],
         group: ['unique_id'],
         where: {
-            properties: {
-                [Op.contains]: prop
-            },
+            [Op.or]: flags.map(f => {
+                return {
+                    properties: {
+                        [Op.contains]: {
+                            flags: [f]
+                        }
+                    }
+                };
+            }),
             organization_id: {
                 [Op.in]: organizationIds
             }
