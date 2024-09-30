@@ -105,7 +105,7 @@ variantRouter.get('/filter', async (req, res, next) => {
 
         if (canGet && flags.length > 0) {
             dbResponse = await getEntriesByPropertiesFlags(flags, userInfo.userOrganizations);
-            return res.status(StatusCodes.OK).send(dbResponse.map(r => r.unique_id));
+            return res.status(StatusCodes.OK).send(dbResponse.filter(r => r.dataValues.rnk === '1').map(r => r.unique_id));
         } else if (!canGet) {
             return res.sendStatus(StatusCodes.FORBIDDEN);
         } else {
