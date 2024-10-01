@@ -1,6 +1,9 @@
 import { CreationOptional, DataTypes,  Model, Optional } from 'sequelize';
 import sequelizeConnection from '../config';
 
+
+export const MISSING = '__missing__';
+
 interface IVariantAttributes {
     id: number;
     unique_id: string;
