@@ -26,22 +26,22 @@ export const getEntriesByUniqueIdsAndOrganizations = async function (uniqueIds: 
 }
 
 export const getEntriesByPropertiesFlags = async function (flags: string[], organizationIds: string[]) {
-    return await VariantModel.findAll({
-        attributes: ['unique_id'],
-        group: ['unique_id'],
-        where: {
-            [Op.or]: flags.map(f => {
-                return {
-                    properties: {
-                        [Op.contains]: {
-                            flags: [f]
-                        }
-                    }
-                };
-            }),
-            organization_id: {
-                [Op.in]: organizationIds
-            }
-        }
+    const flagsWhere = flags.map(f => {
+        return `properties @> '{"flags": ["${f}"]}'`;
     });
+
+    const result = await VariantModel.sequelize.query(`
+        SELECT unique_id, timestamp, properties, rnk
+        FROM (
+          SELECT
+            unique_id,
+            timestamp,
+            properties,
+            RANK() OVER (PARTITION BY unique_id ORDER BY timestamp DESC) AS rnk
+          FROM variants
+          WHERE organization_id IN ('${organizationIds.join("', '")}')
+        ) s
+        WHERE rnk = 1 AND (${flagsWhere.join(' OR ')});`);
+
+    return result;
 }
