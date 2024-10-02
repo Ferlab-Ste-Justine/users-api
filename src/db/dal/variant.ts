@@ -1,5 +1,5 @@
-import { Op } from 'sequelize';
-import VariantModel from '../models/Variant';
+import { col, fn, Op, where } from 'sequelize';
+import VariantModel, { MISSING } from '../models/Variant';
 
 export const addNewEntry = async function (uniqueId: string, organizationId: string, authorId: string, properties: any) {
     return await VariantModel.create({
@@ -27,7 +27,7 @@ export const getEntriesByUniqueIdsAndOrganizations = async function (uniqueIds: 
 
 export const getEntriesByPropertiesFlags = async function (flags: string[], organizationIds: string[]) {
     const flagsWhere = flags.map(f => {
-        return `properties @> '{"flags": ["${f}"]}'`;
+        return f === MISSING ? `JSONB_ARRAY_LENGTH(properties -> 'flags') = 0` : `properties @> '{"flags": ["${f}"]}'`;
     });
 
     const result = await VariantModel.sequelize.query(`
