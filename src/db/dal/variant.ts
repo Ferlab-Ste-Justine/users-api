@@ -25,10 +25,12 @@ export const getEntriesByUniqueIdsAndOrganizations = async function (uniqueIds: 
     });
 }
 
-export const getEntriesByPropertiesFlags = async function (flags: string[], organizationIds: string[]) {
+export const getEntriesByPropertiesFlags = async function (flags: string[], organizationIds: string[], uniqueIdParam: string) {
     const flagsWhere = flags.map(f => {
         return `properties @> '{"flags": ["${f}"]}'`;
     });
+
+    const uniqueIdWhere = uniqueIdParam.length > 0 ? ` AND unique_id LIKE '%${uniqueIdParam}%'` : '';
 
     const result = await VariantModel.sequelize.query(`
         SELECT unique_id, timestamp, properties, rnk
@@ -39,7 +41,7 @@ export const getEntriesByPropertiesFlags = async function (flags: string[], orga
             properties,
             RANK() OVER (PARTITION BY unique_id ORDER BY timestamp DESC) AS rnk
           FROM variants
-          WHERE organization_id IN ('${organizationIds.join("', '")}')
+          WHERE organization_id IN ('${organizationIds.join("', '")}') ${uniqueIdWhere}
         ) s
         WHERE rnk = 1 AND (${flagsWhere.join(' OR ')});`);
 

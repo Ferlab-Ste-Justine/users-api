@@ -103,8 +103,10 @@ variantRouter.get('/filter', async (req, res, next) => {
             flags.push(flagsParam);
         }
 
+        let uniqueIdFilterParam = (req.query?.unique_id || '').toString().trim();
+
         if (canGet && flags.length > 0) {
-            dbResponse = await getEntriesByPropertiesFlags(flags, userInfo.userOrganizations);
+            dbResponse = await getEntriesByPropertiesFlags(flags, userInfo.userOrganizations, uniqueIdFilterParam);
             return res.status(StatusCodes.OK).send(dbResponse[0].map(r => r.unique_id));
         } else if (!canGet) {
             return res.sendStatus(StatusCodes.FORBIDDEN);
