@@ -8,7 +8,7 @@ export const addNewEntry = async function (
     authorId: string,
     properties: any,
 ) {
-    return await VariantModel.findOne({
+    const variantFound = await VariantModel.findOne({
         order: [['timestamp', 'DESC']],
         where: {
             unique_id: {
@@ -18,16 +18,16 @@ export const addNewEntry = async function (
                 [Op.eq]: authorId,
             },
         },
-    }).then(async function onResponse(value: VariantModel) {
-        const combinedProperties = { ...(value ? value.properties : {}), ...properties };
+    });
 
-        return await VariantModel.create({
-            unique_id: uniqueId,
-            organization_id: organizationId,
-            author_id: authorId,
-            properties: combinedProperties,
-            timestamp: new Date(),
-        });
+    const combinedProperties = { ...(variantFound?.properties || {}), ...properties };
+
+    return await VariantModel.create({
+        unique_id: uniqueId,
+        organization_id: organizationId,
+        author_id: authorId,
+        properties: combinedProperties,
+        timestamp: new Date(),
     });
 };
 
