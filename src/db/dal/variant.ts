@@ -1,35 +1,55 @@
 import { Op } from 'sequelize';
+
 import VariantModel from '../models/Variant';
 
-export const addNewEntry = async function (uniqueId: string, organizationId: string, authorId: string, properties: any) {
-    return await VariantModel.create({
-        unique_id: uniqueId,
-        organization_id: organizationId,
-        author_id: authorId,
-        properties,
-        timestamp: new Date()
+export const addNewEntry = async function (
+    uniqueId: string,
+    organizationId: string,
+    authorId: string,
+    properties: any,
+) {
+    return await VariantModel.findOne({
+        order: [['timestamp', 'DESC']],
+        where: {
+            unique_id: {
+                [Op.eq]: uniqueId,
+            },
+            author_id: {
+                [Op.eq]: authorId,
+            },
+        },
+    }).then(async function onResponse(value: VariantModel) {
+        const combinedProperties = { ...(value ? value.properties : {}), ...properties };
+
+        return await VariantModel.create({
+            unique_id: uniqueId,
+            organization_id: organizationId,
+            author_id: authorId,
+            properties: combinedProperties,
+            timestamp: new Date(),
+        });
     });
-}
+};
 
 export const getEntriesByUniqueIdsAndOrganizations = async function (uniqueIds: string[], organizationIds: string[]) {
     return await VariantModel.findAll({
         order: [['timestamp', 'DESC']],
         where: {
             unique_id: {
-                [Op.in]: uniqueIds
+                [Op.in]: uniqueIds,
             },
             organization_id: {
-                [Op.in]: organizationIds
-            }
-        }
+                [Op.in]: organizationIds,
+            },
+        },
     });
-}
+};
 
-export const getEntriesByPropertiesFlags = async function (flags: string[], organizationIds: string[], uniqueIdParam: string) {
-    const flagsWhere = flags.map(f => {
-        return `properties @> '{"flags": ["${f}"]}'`;
-    });
-
+const getEntriesByProperties = async function (
+    whereClause: string,
+    organizationIds: string[],
+    uniqueIdParam: string
+) {
     const uniqueIdWhere = uniqueIdParam.length > 0 ? ` AND unique_id LIKE '%${uniqueIdParam}%'` : '';
 
     const result = await VariantModel.sequelize.query(`
@@ -43,7 +63,27 @@ export const getEntriesByPropertiesFlags = async function (flags: string[], orga
           FROM variants
           WHERE organization_id IN ('${organizationIds.join("', '")}') ${uniqueIdWhere}
         ) s
-        WHERE rnk = 1 AND (${flagsWhere.join(' OR ')});`);
+        WHERE rnk = 1 AND (${whereClause});`);
 
     return result;
+}
+
+export const getEntriesByPropertiesFlags = async function (
+    flags: string[],
+    organizationIds: string[],
+    uniqueIdParam: string
+) {
+    const flagsWhere = flags.map((f) => `properties @> '{"flags": ["${f}"]}'`);
+
+    return await getEntriesByProperties(flagsWhere.join(' OR '), organizationIds, uniqueIdParam);
+};
+
+export const getEntriesByPropertiesNote = async function (
+    hasNote: boolean,
+    organizationIds: string[],
+    uniqueIdParam: string
+) {
+    const notesWhere = `properties ->> 'note' IS ${hasNote ? 'NOT NULL' : 'NULL'}`;
+
+    return await getEntriesByProperties(notesWhere, organizationIds, uniqueIdParam);
 }

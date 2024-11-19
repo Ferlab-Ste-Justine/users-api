@@ -1,18 +1,18 @@
 import { Request, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-import Realm from '../config/realm';
 import { keycloakRealm } from '../config/env';
-import { addNewEntry, getEntriesByUniqueIdsAndOrganizations, getEntriesByPropertiesFlags } from '../db/dal/variant';
+import Realm from '../config/realm';
+import { addNewEntry, getEntriesByPropertiesFlags, getEntriesByPropertiesNote, getEntriesByUniqueIdsAndOrganizations } from '../db/dal/variant';
 
 const CLIN_GENETICIAN_ROLE = 'clin_genetician';
 
-const EMPTY_PROPERTIES = { };
+const EMPTY_PROPERTIES = {};
 
 interface UserInfo {
-    authorId: string,
-    userRoles: string[],
-    userOrganizations: string[]
+    authorId: string;
+    userRoles: string[];
+    userOrganizations: string[];
 }
 
 function getUserInfo(request: Request): UserInfo {
@@ -23,7 +23,10 @@ function getUserInfo(request: Request): UserInfo {
 }
 
 function validateCreate(userInfo: UserInfo, organization_id: string) {
-    return userInfo.userRoles.indexOf(CLIN_GENETICIAN_ROLE) > -1 && userInfo.userOrganizations.indexOf(organization_id) > -1;
+    return (
+        userInfo.userRoles.indexOf(CLIN_GENETICIAN_ROLE) > -1 &&
+        userInfo.userOrganizations.indexOf(organization_id) > -1
+    );
 }
 
 function validateGet(userInfo: UserInfo) {
@@ -42,7 +45,12 @@ variantRouter.post('/:unique_id/:organization_id', async (req, res, next) => {
         const canCreate = validateCreate(userInfo, req?.params?.organization_id);
 
         if (canCreate) {
-            const dbResponse = await addNewEntry(req?.params?.unique_id, req?.params?.organization_id, userInfo.authorId, req?.body || EMPTY_PROPERTIES);
+            const dbResponse = await addNewEntry(
+                req?.params?.unique_id,
+                req?.params?.organization_id,
+                userInfo.authorId,
+                req?.body || EMPTY_PROPERTIES,
+            );
             return res.status(StatusCodes.CREATED).send(dbResponse);
         } else {
             return res.sendStatus(StatusCodes.FORBIDDEN);
@@ -62,7 +70,7 @@ variantRouter.get('/', async (req, res, next) => {
         const canGet = validateGet(userInfo);
 
         let dbResponse = [];
-        let uniqueIds = [];
+        const uniqueIds = [];
 
         if (Array.isArray(req.query?.unique_id)) {
             uniqueIds.push(...req.query.unique_id);
@@ -78,7 +86,6 @@ variantRouter.get('/', async (req, res, next) => {
         } else {
             return res.sendStatus(StatusCodes.BAD_REQUEST);
         }
-
     } catch (e) {
         next(e);
     }
@@ -94,7 +101,8 @@ variantRouter.get('/filter', async (req, res, next) => {
         const canGet = validateGet(userInfo);
 
         let dbResponse = [];
-        let flags = [];
+        const flags = [];
+        let hasNote = null;
 
         const flagsParam = req.query?.flag;
         if (Array.isArray(flagsParam)) {
@@ -103,11 +111,23 @@ variantRouter.get('/filter', async (req, res, next) => {
             flags.push(flagsParam);
         }
 
-        let uniqueIdFilterParam = (req.query?.unique_id || '').toString().trim();
+        const noteParams = req.query?.note;
+        if (typeof noteParams === 'string') {
+            if (noteParams === 'true') {
+                hasNote = true;
+            } else if (noteParams === 'false') {
+                hasNote = false;
+            }
+        }
 
-        if (canGet && flags.length > 0) {
+        const uniqueIdFilterParam = (req.query?.unique_id || '').toString().trim();
+
+        if (canGet && hasNote !== null) {
+            dbResponse = await getEntriesByPropertiesNote(hasNote, userInfo.userOrganizations, uniqueIdFilterParam);
+            return res.status(StatusCodes.OK).send(dbResponse[0].map((r) => r.unique_id));
+        } else if (canGet && flags.length > 0) {
             dbResponse = await getEntriesByPropertiesFlags(flags, userInfo.userOrganizations, uniqueIdFilterParam);
-            return res.status(StatusCodes.OK).send(dbResponse[0].map(r => r.unique_id));
+            return res.status(StatusCodes.OK).send(dbResponse[0].map((r) => r.unique_id));
         } else if (!canGet) {
             return res.sendStatus(StatusCodes.FORBIDDEN);
         } else {
