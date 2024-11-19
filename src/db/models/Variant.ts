@@ -1,4 +1,5 @@
-import { CreationOptional, DataTypes,  Model, Optional } from 'sequelize';
+import { CreationOptional, DataTypes, Model, Optional } from 'sequelize';
+
 import sequelizeConnection from '../config';
 
 interface IVariantAttributes {
@@ -7,7 +8,7 @@ interface IVariantAttributes {
     author_id: string;
     organization_id: string;
     timestamp: Date;
-    properties: Object;
+    properties: object;
 }
 
 type VariantCreationAttributes = Optional<IVariantAttributes, 'id'>;
@@ -50,19 +51,19 @@ VariantModel.init(
             defaultValue: new Date(),
             validate: {
                 isDate: true,
-            }
+            },
         },
         properties: {
             type: DataTypes.JSONB,
             allowNull: false,
             defaultValue: {},
-        }
+        },
     },
     {
         sequelize: sequelizeConnection,
         tableName: 'variants',
-        timestamps: false
-    }
+        timestamps: false,
+    },
 );
 
 export default VariantModel;
