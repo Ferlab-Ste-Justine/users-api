@@ -14,8 +14,8 @@ export const addNewEntry = async function (
             unique_id: {
                 [Op.eq]: uniqueId,
             },
-            author_id: {
-                [Op.eq]: authorId,
+            organization_id: {
+                [Op.eq]: organizationId,
             },
         },
     });
