@@ -22,13 +22,17 @@ export const addNewEntry = async function (
 
     const combinedProperties = { ...(variantFound?.properties || {}), ...properties };
 
-    return await VariantModel.create({
-        unique_id: uniqueId,
-        organization_id: organizationId,
-        author_id: authorId,
-        properties: combinedProperties,
-        timestamp: new Date(),
-    });
+    if (Object.keys(properties).indexOf('flags') > -1 && variantFound) {
+        return await variantFound.update({ properties: combinedProperties, timestamp: new Date(), });
+    } else {
+        return await VariantModel.create({
+            unique_id: uniqueId,
+            organization_id: organizationId,
+            author_id: authorId,
+            properties: combinedProperties,
+            timestamp: new Date(),
+        });
+    }
 };
 
 export const getEntriesByUniqueIdsAndOrganizations = async function (uniqueIds: string[], organizationIds: string[]) {
