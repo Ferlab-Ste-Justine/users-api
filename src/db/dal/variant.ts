@@ -45,11 +45,6 @@ export const getEntriesByUniqueIdsAndOrganizations = async function (uniqueIds: 
             organization_id: {
                 [Op.in]: organizationIds,
             },
-            properties: {
-                [Op.contains]: {
-                    flags: []
-                }
-            },
         },
     });
 };
