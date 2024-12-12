@@ -1,4 +1,4 @@
-import { Op } from 'sequelize';
+import { BindOrReplacements, Op, QueryTypes } from 'sequelize';
 
 import VariantModel from '../models/Variant';
 
@@ -51,10 +51,16 @@ export const getEntriesByUniqueIdsAndOrganizations = async function (uniqueIds: 
 
 const getEntriesByProperties = async function (
     whereClause: string,
-    organizationIds: string[],
-    uniqueIdParam: string
+    uniqueIdParam: string,
+    bindObject: BindOrReplacements
 ) {
-    const uniqueIdWhere = uniqueIdParam.length > 0 ? ` AND unique_id LIKE '%${uniqueIdParam}%'` : '';
+    let uniqueIdWhere = '';
+
+    if (uniqueIdParam?.length > 0) {
+        uniqueIdWhere = `AND unique_id LIKE $uniqueIdParam`;
+
+        bindObject["uniqueIdParam"] = `%${uniqueIdParam}%`;
+    }
 
     const result = await VariantModel.sequelize.query(`
         SELECT unique_id, timestamp, properties, rnk
@@ -65,9 +71,14 @@ const getEntriesByProperties = async function (
             properties,
             RANK() OVER (PARTITION BY unique_id ORDER BY timestamp DESC) AS rnk
           FROM variants
-          WHERE organization_id IN ('${organizationIds.join("', '")}') ${uniqueIdWhere}
+          WHERE organization_id = ANY($organizationIds) ${uniqueIdWhere}
         ) s
-        WHERE rnk = 1 AND (${whereClause});`);
+        WHERE rnk = 1 AND (${whereClause});`,
+        {
+            type: QueryTypes.SELECT,
+            bind: bindObject,
+            raw: true
+        });
 
     return result;
 }
@@ -77,9 +88,20 @@ export const getEntriesByPropertiesFlags = async function (
     organizationIds: string[],
     uniqueIdParam: string
 ) {
-    const flagsWhere = flags.map((f) => `properties @> '{"flags": ["${f}"]}'`);
+    const flagsWhere = [];
 
-    return await getEntriesByProperties(flagsWhere.join(' OR '), organizationIds, uniqueIdParam);
+    const bindObject = {
+        "organizationIds": organizationIds
+    };
+
+    flags.forEach((f, index) => {
+        const flagsWhereBindKey = `flagsWhere${index}`;
+
+        flagsWhere.push(`properties @> $${flagsWhereBindKey}`);
+        bindObject[flagsWhereBindKey] = `{"flags": ["${f}"]}`;
+    });
+
+    return await getEntriesByProperties(flagsWhere.join(' OR '), uniqueIdParam, bindObject);
 };
 
 export const getEntriesByPropertiesNote = async function (
@@ -89,5 +111,9 @@ export const getEntriesByPropertiesNote = async function (
 ) {
     const notesWhere = `properties ->> 'note' IS ${hasNote ? 'NOT NULL' : 'NULL'}`;
 
-    return await getEntriesByProperties(notesWhere, organizationIds, uniqueIdParam);
+    const bindObject = {
+        "organizationIds": organizationIds
+    };
+
+    return await getEntriesByProperties(notesWhere, uniqueIdParam, bindObject);
 }
