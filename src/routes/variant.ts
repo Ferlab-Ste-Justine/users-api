@@ -124,10 +124,10 @@ variantRouter.get('/filter', async (req, res, next) => {
 
         if (canGet && hasNote !== null) {
             dbResponse = await getEntriesByPropertiesNote(hasNote, userInfo.userOrganizations, uniqueIdFilterParam);
-            return res.status(StatusCodes.OK).send(dbResponse[0].map((r) => r.unique_id));
+            return res.status(StatusCodes.OK).send(dbResponse?.map((r) => r.unique_id));
         } else if (canGet && flags.length > 0) {
             dbResponse = await getEntriesByPropertiesFlags(flags, userInfo.userOrganizations, uniqueIdFilterParam);
-            return res.status(StatusCodes.OK).send(dbResponse[0].map((r) => r.unique_id));
+            return res.status(StatusCodes.OK).send(dbResponse?.map((r) => r.unique_id));
         } else if (!canGet) {
             return res.sendStatus(StatusCodes.FORBIDDEN);
         } else {
