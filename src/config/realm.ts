@@ -3,6 +3,7 @@ enum Realm {
     CQDG = 'CQDG',
     KF = 'kidsfirstdrc',
     CLIN = 'clin',
+    UNIC = 'UNIC',
 }
 
 export default Realm;
