@@ -4,6 +4,7 @@ import cqdgConfig from './cqdg';
 import defaultConfig from './default';
 import includeConfig from './include';
 import kidsfirstConfig from './kidsfirst';
+import unicConfig from './unic';
 
 interface IProjectConfig {
     otherKey: string;
@@ -26,6 +27,8 @@ const getConfig = (): IProjectConfig => {
             return kidsfirstConfig;
         case Realm.CLIN:
             return defaultConfig;
+        case Realm.UNIC:
+            return unicConfig;
         default:
             return defaultConfig;
     }
