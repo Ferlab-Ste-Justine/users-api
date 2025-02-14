@@ -12,7 +12,7 @@ interface IUserSetAttributes {
     is_phantom_manifest: boolean;
     creation_date: Date;
     updated_date: Date;
-    invisible: boolean;
+    is_invisible: boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -29,7 +29,7 @@ class UserSetModel extends Model<IUserSetAttributes, IUserSetsInput> implements 
     public is_phantom_manifest: boolean;
     public creation_date: Date;
     public updated_date: Date;
-    public invisible: boolean;
+    public is_invisible: boolean;
 }
 
 UserSetModel.init(
@@ -92,7 +92,7 @@ UserSetModel.init(
                 isDate: true,
             },
         },
-        invisible: {
+        is_invisible: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: false,
