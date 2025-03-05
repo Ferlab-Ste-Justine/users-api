@@ -14,3 +14,5 @@ COPY migrateUpWithWrapper.mjs ./migrateUpWithWrapper.mjs
 RUN apk update && apk upgrade --no-cache libcrypto3 libssl3 && npm ci --omit=dev
 ENV NODE_ENV=production
 CMD [ "npm", "run", "start:prd" ]
+
+
