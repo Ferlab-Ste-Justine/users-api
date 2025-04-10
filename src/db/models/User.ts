@@ -39,6 +39,7 @@ interface IUserAttributes {
     website?: string;
     areas_of_interest?: string[];
     is_public?: boolean;
+    title?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -81,6 +82,7 @@ class UserModel extends Model<IUserAttributes, IUserInput> implements IUserAttri
     public website?: string;
     public areas_of_interest?: string[];
     public is_public?: boolean;
+    public title?: string;
 }
 
 UserModel.init(
@@ -288,6 +290,13 @@ UserModel.init(
             defaultValue: false,
             validate: {
                 isBoolean: true,
+            },
+        },
+        title: {
+            type: DataTypes.CITEXT,
+            allowNull: true,
+            validate: {
+                validate: (value: string) => value === '' || NAME_REGEX.test(value),
             },
         },
     },
