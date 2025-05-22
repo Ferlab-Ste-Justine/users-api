@@ -25,7 +25,7 @@ export const getById = async (id: string): Promise<IUserSetsOutput> => {
 export const getByIdAndShared = async (id: string): Promise<IUserSetsOutput> => {
     const filter = await UserSetModel.findOne({
         where: {
-            [Op.and]: [{ id }, { sharedpublicly: true }],
+            [Op.and]: [{ id }],
         },
     });
 
@@ -73,8 +73,11 @@ export const destroy = async (keycloak_id: string, id: string): Promise<boolean>
     return !!deletedCount;
 };
 
+/*@deprecate*/
 export const share = async (id: string, keycloak_id: string): Promise<boolean> => {
-    const updatedCount = await UserSetModel.update(
+    // Make that function an identity so that it does not break the portals.
+    // Once the portals are updated, this feature will be removed.
+    /*  const updatedCount = await UserSetModel.update(
         {
             sharedpublicly: true,
         },
@@ -85,5 +88,6 @@ export const share = async (id: string, keycloak_id: string): Promise<boolean> =
         },
     );
 
-    return !!updatedCount?.[0];
+    return !!updatedCount?.[0];*/
+    return true;
 };
