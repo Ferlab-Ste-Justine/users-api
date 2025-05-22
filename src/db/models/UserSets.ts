@@ -8,7 +8,6 @@ interface IUserSetAttributes {
     keycloak_id: string;
     content: any;
     alias: string;
-    sharedpublicly: boolean;
     is_phantom_manifest: boolean;
     creation_date: Date;
     updated_date: Date;
@@ -25,7 +24,6 @@ class UserSetModel extends Model<IUserSetAttributes, IUserSetsInput> implements 
     public keycloak_id: string;
     public content: any;
     public alias: string;
-    public sharedpublicly: boolean;
     public is_phantom_manifest: boolean;
     public creation_date: Date;
     public updated_date: Date;
@@ -55,14 +53,6 @@ UserSetModel.init(
             allowNull: false,
             validate: {
                 is: SET_FILTER_NAME_REGEX,
-            },
-        },
-        sharedpublicly: {
-            type: DataTypes.BOOLEAN,
-            allowNull: false,
-            defaultValue: false,
-            validate: {
-                isBoolean: true,
             },
         },
         is_phantom_manifest: {
