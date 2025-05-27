@@ -5,9 +5,11 @@ import request from 'supertest';
 import { getToken, publicKey } from '../../test/authTestUtils';
 import buildApp from '../app';
 import { createUser, getUserById, updateUser } from '../db/dal/user';
+import { getByIds } from '../db/dal/userSets';
 import { IUserInput } from '../db/models/User';
 
 jest.mock('../db/dal/user');
+jest.mock('../db/dal/userSets');
 
 const checkBody = (expectedBody) => (res) => {
     expect(JSON.stringify(res.body)).toEqual(JSON.stringify(expectedBody));
@@ -254,6 +256,47 @@ describe('Express app', () => {
             expect((updateUser as jest.Mock).mock.calls[0][1]['understand_disclaimer']).toEqual(
                 putUserBody.understand_disclaimer,
             );
+        });
+    });
+
+    describe('POST /user-sets/aliases', () => {
+        const payload = {
+            setIds: [
+                'AA33511e8d-02e1-40d9-97ad-589eb7d80fbd', // bad input (not uuid) on purpose
+                '459b87ae-1910-4b52-bfcb-bb50062f40db',
+                'f2ba2794-b486-4169-b91b-7e10a932f0e7',
+            ],
+        };
+
+        beforeEach(() => {
+            (getByIds as jest.Mock).mockReset();
+        });
+
+        it('should return 200 when the payload is valid', async () => {
+            (getByIds as jest.Mock).mockImplementation(() => [
+                {
+                    id: '459b87ae-1910-4b52-bfcb-bb50062f40db',
+                    alias: 'Cypress_B',
+                },
+                {
+                    id: 'f2ba2794-b486-4169-b91b-7e10a932f0e7',
+                    alias: 'Q1 union Q2 - 1165',
+                },
+            ]);
+
+            const token = getToken(1000, 'keycloak_id');
+            const result = await request(app)
+                .post('/user-sets/aliases')
+                .send(payload)
+                .set('Content-type', 'application/json')
+                .set({ Authorization: `Bearer ${token}` })
+                .expect(200);
+
+            expect(
+                result.body.map((x) => x.setId.replace('set_id:', '')).every((x) => payload.setIds.includes(x)),
+            ).toBe(true);
+            expect(result.body.length).toEqual(payload.setIds.length - 1);
+            expect((getByIds as jest.Mock).mock.calls.length).toEqual(1);
         });
     });
 });

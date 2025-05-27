@@ -22,6 +22,13 @@ export const getById = async (id: string): Promise<IUserSetsOutput> => {
     return filter;
 };
 
+export const getByIds = async (ids: string[]): Promise<IUserSetsOutput[]> =>
+    await UserSetModel.findAll({
+        where: {
+            id: { [Op.in]: ids },
+        },
+    });
+
 export const getByIdAndShared = async (id: string): Promise<IUserSetsOutput> => {
     const filter = await UserSetModel.findOne({
         where: {
