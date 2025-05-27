@@ -259,7 +259,7 @@ describe('Express app', () => {
         });
     });
 
-    describe('POST /user-sets/tags', () => {
+    describe('POST /user-sets/aliases', () => {
         const payload = {
             setIds: [
                 'AA33511e8d-02e1-40d9-97ad-589eb7d80fbd', // bad input (not uuid) on purpose
@@ -286,7 +286,7 @@ describe('Express app', () => {
 
             const token = getToken(1000, 'keycloak_id');
             const result = await request(app)
-                .post('/user-sets/tags')
+                .post('/user-sets/aliases')
                 .send(payload)
                 .set('Content-type', 'application/json')
                 .set({ Authorization: `Bearer ${token}` })

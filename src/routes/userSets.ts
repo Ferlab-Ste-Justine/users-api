@@ -73,13 +73,13 @@ userSetsRouter.put('/shared/:id', async (req, res, next) => {
     }
 });
 
-userSetsRouter.post('/tags', async (req, res, next) => {
+userSetsRouter.post('/aliases', async (req, res, next) => {
     const addPrefix = (s: string) => 'set_id:' + s;
     const removePrefix = (s: string) => s.replace('set_id:', '');
     try {
         const setIds = (req.body?.['setIds'] || []).map(removePrefix).filter(validateUuid);
         const sets = await getByIds(setIds);
-        const result = sets.map((x) => ({ setId: addPrefix(x.id), tag: x.alias }));
+        const result = sets.map((x) => ({ setId: addPrefix(x.id), alias: x.alias }));
         res.status(StatusCodes.OK).send(result);
     } catch (e) {
         next(e);
