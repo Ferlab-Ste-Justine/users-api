@@ -128,9 +128,17 @@ export const searchUsers = async ({
         },
     });
 
+    const allActiveUsersCount = await UserModel.count({
+        where: {
+            completed_registration: true,
+            deleted: false,
+        },
+    });
+
     return {
         users: results.rows,
         total: results.count,
+        allActiveUsersTotal: allActiveUsersCount,
     };
 };
 
