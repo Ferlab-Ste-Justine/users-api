@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import { IUserOutput } from '../db/models/User';
-import { NewsletterPayload, NewsletterType, SubscriptionStatus } from '../utils/newsletter';
+import { NewsletterPayload, SubscriptionStatus } from '../utils/newsletter';
 import { getSubscriptionStatus, handleNewsletterUpdate } from './mailchimp';
 
 jest.mock('../config/env');
@@ -13,6 +13,7 @@ describe('Mailchimp service', () => {
         env.mailchimpApiKey = '11a11a11aa1a11aa11a11aa1111aa1a1-us13';
         env.mailchimpUsername = 'username';
         env.mailchimpKidsfirstListId = 'KF_ID';
+        //@deprecated (newsletter_dataset_subcription)
         env.mailchimpKidsfirstDatasetListId = 'KF_DATASET_ID';
     });
 
@@ -30,7 +31,6 @@ describe('Mailchimp service', () => {
         } as IUserOutput,
         email: 'newsletter_email',
         action: SubscriptionStatus.SUBSCRIBED,
-        type: NewsletterType.KIDSFIRST,
     };
 
     describe('Update subscription state', () => {
@@ -58,23 +58,6 @@ describe('Mailchimp service', () => {
             expect((global.fetch as unknown as jest.Mock).mock.calls.length).toEqual(1);
         });
 
-        it('should determine mailchimp URL based on newsletter type', async () => {
-            const mockResponse = { status: 200, text: () => 'Mock success' };
-
-            (global.fetch as unknown as jest.Mock).mockImplementation(() => mockResponse);
-
-            await handleNewsletterUpdate(payload);
-            await handleNewsletterUpdate({ ...payload, type: NewsletterType.KIDSFIRST_DATASET });
-
-            expect((global.fetch as unknown as jest.Mock).mock.calls.length).toEqual(2);
-            expect((global.fetch as unknown as jest.Mock).mock.calls[0][0]).toEqual(
-                'https://us13.api.mailchimp.com/3.0/lists/KF_ID/members/newsletter_email',
-            );
-            expect((global.fetch as unknown as jest.Mock).mock.calls[1][0]).toEqual(
-                'https://us13.api.mailchimp.com/3.0/lists/KF_DATASET_ID/members/newsletter_email',
-            );
-        });
-
         it('should return SUBSCRIBED if subscription request to mailchimp succeeds', async () => {
             const mockResponse = { status: 200, text: () => 'Mock success' };
 
@@ -100,10 +83,10 @@ describe('Mailchimp service', () => {
 
     describe('Get subscription status', () => {
         it('should do nothing and return FAILED if email is empty', async () => {
-            const outputNull = await getSubscriptionStatus(null, NewsletterType.KIDSFIRST);
+            const outputNull = await getSubscriptionStatus(null);
             expect(outputNull).toBe(SubscriptionStatus.FAILED);
 
-            const outputEmpty = await getSubscriptionStatus('', NewsletterType.KIDSFIRST);
+            const outputEmpty = await getSubscriptionStatus('');
             expect(outputEmpty).toBe(SubscriptionStatus.FAILED);
 
             expect((global.fetch as unknown as jest.Mock).mock.calls.length).toEqual(0);
@@ -115,26 +98,9 @@ describe('Mailchimp service', () => {
 
             (global.fetch as unknown as jest.Mock).mockImplementation(() => mockResponse);
 
-            const output = await getSubscriptionStatus('newsletter_email', NewsletterType.KIDSFIRST);
+            const output = await getSubscriptionStatus('newsletter_email');
             expect(output).toBe(SubscriptionStatus.FAILED);
             expect((global.fetch as unknown as jest.Mock).mock.calls.length).toEqual(1);
-        });
-
-        it('should determine mailchimp URL based on newsletter type', async () => {
-            const mockResponse = { status: 200, text: () => 'Mock success' };
-
-            (global.fetch as unknown as jest.Mock).mockImplementation(() => mockResponse);
-
-            await getSubscriptionStatus('newsletter_email', NewsletterType.KIDSFIRST);
-            await getSubscriptionStatus('newsletter_email', NewsletterType.KIDSFIRST_DATASET);
-
-            expect((global.fetch as unknown as jest.Mock).mock.calls.length).toEqual(2);
-            expect((global.fetch as unknown as jest.Mock).mock.calls[0][0]).toEqual(
-                'https://us13.api.mailchimp.com/3.0/lists/KF_ID/members/newsletter_email',
-            );
-            expect((global.fetch as unknown as jest.Mock).mock.calls[1][0]).toEqual(
-                'https://us13.api.mailchimp.com/3.0/lists/KF_DATASET_ID/members/newsletter_email',
-            );
         });
 
         it('should return SUBSCRIBED if status in mailchimp response is subscribed', async () => {
@@ -147,7 +113,7 @@ describe('Mailchimp service', () => {
 
             (global.fetch as unknown as jest.Mock).mockImplementation(() => mockResponse);
 
-            const output = await getSubscriptionStatus('newsletter_email', NewsletterType.KIDSFIRST);
+            const output = await getSubscriptionStatus('newsletter_email');
             expect(output).toBe(SubscriptionStatus.SUBSCRIBED);
             expect((global.fetch as unknown as jest.Mock).mock.calls.length).toEqual(1);
         });
@@ -162,7 +128,7 @@ describe('Mailchimp service', () => {
 
             (global.fetch as unknown as jest.Mock).mockImplementation(() => mockResponse);
 
-            const output = await getSubscriptionStatus('newsletter_email', NewsletterType.KIDSFIRST);
+            const output = await getSubscriptionStatus('newsletter_email');
             expect(output).toBe(SubscriptionStatus.UNSUBSCRIBED);
             expect((global.fetch as unknown as jest.Mock).mock.calls.length).toEqual(1);
         });

@@ -161,6 +161,7 @@ export const createOrUpdate = async (payload: Persona): Promise<string> => {
                 newsletter_subscription_status: payload.acceptedKfOptIn
                     ? SubscriptionStatus.SUBSCRIBED
                     : SubscriptionStatus.UNSUBSCRIBED,
+                //@deprecated (newsletter_dataset_subcription)
                 newsletter_dataset_subscription_status: payload.acceptedDatasetSub
                     ? SubscriptionStatus.SUBSCRIBED
                     : SubscriptionStatus.UNSUBSCRIBED,
@@ -191,6 +192,7 @@ export const createOrUpdate = async (payload: Persona): Promise<string> => {
                     newsletter_subscription_status: payload.acceptedKfOptIn
                         ? SubscriptionStatus.SUBSCRIBED
                         : SubscriptionStatus.UNSUBSCRIBED,
+                    //@deprecated (newsletter_dataset_subcription)
                     newsletter_dataset_subscription_status: payload.acceptedDatasetSub
                         ? SubscriptionStatus.SUBSCRIBED
                         : SubscriptionStatus.UNSUBSCRIBED,

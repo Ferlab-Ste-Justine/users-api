@@ -1,10 +1,5 @@
-import {
-    mailchimpApiKey,
-    mailchimpKidsfirstDatasetListId,
-    mailchimpKidsfirstListId,
-    mailchimpUsername,
-} from '../config/env';
-import { NewsletterPayload, NewsletterType, SubscriptionStatus } from '../utils/newsletter';
+import { mailchimpApiKey, mailchimpKidsfirstListId, mailchimpUsername } from '../config/env';
+import { NewsletterPayload, SubscriptionStatus } from '../utils/newsletter';
 
 export const handleNewsletterUpdate = async (payload: NewsletterPayload): Promise<SubscriptionStatus> => {
     if (!payload.email) {
@@ -21,22 +16,13 @@ export const handleNewsletterUpdate = async (payload: NewsletterPayload): Promis
 };
 
 const sendSubscriptionPostRequest = async (payload: NewsletterPayload): Promise<SubscriptionStatus> => {
-    const { user, type, action, email } = payload;
+    const { user, action, email } = payload;
     const mailChimpDataCenter = mailchimpApiKey.split('-')[1];
     const buff = Buffer.from(`${mailchimpUsername}:${mailchimpApiKey}`);
     const b64 = buff.toString('base64');
 
-    const subscriptionUrl: string = (() => {
-        if (type === NewsletterType.KIDSFIRST) {
-            return retrieveMailchimpUrl(mailChimpDataCenter, mailchimpKidsfirstListId, email);
-        }
-
-        if (type === NewsletterType.KIDSFIRST_DATASET) {
-            return retrieveMailchimpUrl(mailChimpDataCenter, mailchimpKidsfirstDatasetListId, email);
-        }
-
-        throw new Error(`Unsupported Newsletter type [${type}] for Mailchimp adapter`);
-    })();
+    const subscriptionUrl: string = (() =>
+        retrieveMailchimpUrl(mailChimpDataCenter, mailchimpKidsfirstListId, email))();
 
     const response = await fetch(subscriptionUrl, {
         method: 'PUT',
@@ -63,36 +49,27 @@ const sendSubscriptionPostRequest = async (payload: NewsletterPayload): Promise<
     return action;
 };
 
-export const getSubscriptionStatus = async (email: string, type: NewsletterType): Promise<SubscriptionStatus> => {
+export const getSubscriptionStatus = async (email: string): Promise<SubscriptionStatus> => {
     if (!email) {
         console.error('Missing newsletter email');
         return SubscriptionStatus.FAILED;
     }
 
     try {
-        return await sendGetSubscriptionRequest(email, type);
+        return await sendGetSubscriptionRequest(email);
     } catch (error) {
         console.error(error);
         return SubscriptionStatus.FAILED;
     }
 };
 
-const sendGetSubscriptionRequest = async (email: string, type: NewsletterType): Promise<SubscriptionStatus> => {
+const sendGetSubscriptionRequest = async (email: string): Promise<SubscriptionStatus> => {
     const mailChimpDataCenter = mailchimpApiKey.split('-')[1];
     const buff = Buffer.from(`${mailchimpUsername}:${mailchimpApiKey}`);
     const b64 = buff.toString('base64');
 
-    const subscriptionUrl: string = (() => {
-        if (type === NewsletterType.KIDSFIRST) {
-            return retrieveMailchimpUrl(mailChimpDataCenter, mailchimpKidsfirstListId, email);
-        }
-
-        if (type === NewsletterType.KIDSFIRST_DATASET) {
-            return retrieveMailchimpUrl(mailChimpDataCenter, mailchimpKidsfirstDatasetListId, email);
-        }
-
-        throw new Error(`Unsupported Newsletter type [${type}] for Mailchimp adapter`);
-    })();
+    const subscriptionUrl: string = (() =>
+        retrieveMailchimpUrl(mailChimpDataCenter, mailchimpKidsfirstListId, email))();
 
     const response = await fetch(subscriptionUrl, {
         method: 'GET',
