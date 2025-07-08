@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 
 import UserModel from '../db/models/User';
-import { NewsletterType, SubscriptionStatus } from '../utils/newsletter';
+import { SubscriptionStatus } from '../utils/newsletter';
 import {
     fetchSheet,
     findSubscription,
@@ -29,7 +29,6 @@ describe('smartsheet', () => {
                 newsletter_email: 'test@example.com',
             },
         } as UserModel,
-        type: NewsletterType.INCLUDE,
     };
 
     const mockSheet: Sheet = {

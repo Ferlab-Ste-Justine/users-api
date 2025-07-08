@@ -33,6 +33,7 @@ interface IUserAttributes {
     locale?: string;
     newsletter_email?: string;
     newsletter_subscription_status?: SubscriptionStatus;
+    //@deprecated (newsletter_dataset_subcription)
     newsletter_dataset_subscription_status?: SubscriptionStatus;
     location_country?: string;
     location_state?: string;
@@ -63,6 +64,7 @@ class UserModel extends Model<IUserAttributes, IUserInput> implements IUserAttri
     public locale?: string;
     public newsletter_email?: string;
     public newsletter_subscription_status?: SubscriptionStatus;
+    //@deprecated (newsletter_dataset_subcription)
     public newsletter_dataset_subscription_status?: SubscriptionStatus;
     public commercial_use_reason: string;
     public accepted_terms: boolean;
@@ -254,6 +256,7 @@ UserModel.init(
                 isAlpha: true,
             },
         },
+        //@deprecated (newsletter_dataset_subcription)
         newsletter_dataset_subscription_status: {
             type: DataTypes.ENUM(
                 SubscriptionStatus.SUBSCRIBED,
