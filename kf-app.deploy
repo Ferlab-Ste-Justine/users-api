@@ -17,4 +17,5 @@ deploy {
     memory_task = "4096"
     health_check_path = "/status"
     dependencies = "ecr"
+    branch = "bd72a7e4745126a2ae69776fcb357f47a8be0446"
 }
