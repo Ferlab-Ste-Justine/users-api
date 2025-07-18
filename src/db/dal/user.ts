@@ -42,6 +42,7 @@ const createMatchClauses = (match: string) => {
     };
 };
 
+// Legacy function to create AND clauses before createGroupedAndClauses was introduced. Left for reference and rollback
 const createAndClauses = (
     filters: {
         filterName: string;
@@ -65,6 +66,57 @@ const createAndClauses = (
             });
         }
     }
+    return andClauses;
+};
+
+const createGroupedAndClauses = (
+    filters: {
+        filterName: string;
+        filterArray: string[];
+        filterOptions: string[];
+    }[],
+) => {
+    const andClauses = [];
+
+    for (const { filterName, filterArray, filterOptions } of filters) {
+        if (!filterArray || filterArray.length === 0) continue;
+
+        // Normalize values to lowercase and filter out falsy values
+        const normalized = filterArray.filter(Boolean).map((v) => v.toLowerCase());
+
+        // Prepare the list of "other" options (excluding the key itself)
+        const otherValues =
+            filterOptions?.filter((opt) => opt.toLowerCase() !== config.otherKey).map((v) => v.toLowerCase()) || [];
+
+        // Build the OR group for the current filter
+        const orGroup = [];
+
+        // Add normal values (all except "other")
+        for (const val of normalized) {
+            if (val !== config.otherKey) {
+                orGroup.push({
+                    [filterName]: { [Op.contains]: [val] },
+                });
+            }
+        }
+
+        // Add "other" case as NOT contained (excluding known values)
+        if (normalized.includes(config.otherKey) && otherValues.length > 0) {
+            orGroup.push({
+                [Op.not]: {
+                    [filterName]: {
+                        [Op.contained]: otherValues,
+                    },
+                },
+            });
+        }
+
+        // Only push the OR clause if there is at least one condition
+        if (orGroup.length > 0) {
+            andClauses.push({ [Op.or]: orGroup });
+        }
+    }
+
     return andClauses;
 };
 
@@ -110,7 +162,7 @@ export const searchUsers = async ({
             filterOptions: config.areaOfInterestOptions?.map((option) => option.value) || [],
         },
     ];
-    const andClauses = createAndClauses(filters);
+    const filterAndClauses = createGroupedAndClauses(filters);
 
     const results = await UserModel.findAndCountAll({
         attributes: config.cleanedUserAttributes,
@@ -118,13 +170,15 @@ export const searchUsers = async ({
         offset: pageIndex * pageSize,
         order: sorts,
         where: {
-            [Op.and]: {
-                completed_registration: true,
-                is_public: true,
-                deleted: false,
-                ...matchClauses,
-                [Op.and]: andClauses,
-            },
+            [Op.and]: [
+                {
+                    completed_registration: true,
+                    is_public: true,
+                    deleted: false,
+                },
+                ...(matchClauses ? [matchClauses] : []),
+                ...filterAndClauses,
+            ],
         },
     });
 
