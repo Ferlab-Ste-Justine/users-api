@@ -18,6 +18,7 @@
         "dev": "nodemon",
         "start": "ts-node ./src/index.ts",
         "start:prd": "node migrateUpWithWrapper.mjs && node ./dist/src/index.js",
+        "localstack": "node migrateUpWithWrapper.mjs && node --inspect=0.0.0.0 ./dist/src/index.js",
         "test": "jest --silent",
         "test:watch": "jest --watch"
     },
