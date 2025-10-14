@@ -37,6 +37,7 @@ const sendSubscriptionPostRequest = async (payload: NewsletterPayload): Promise<
                 FNAME: user.first_name,
                 LNAME: user.last_name,
             },
+            tags: ['KF Portal Sign Up'],
         }),
     });
 
