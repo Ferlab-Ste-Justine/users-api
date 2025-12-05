@@ -43,5 +43,6 @@ export const getToken = (expire = 1000, sub = '12345-678-90abcdef'): string =>
             expiresIn: expire,
             algorithm: 'RS256',
             keyid: 'Ip-PDWNUlHbpuTJ7mFERzFzm8CRDJU0A7qSRZMIFoQ0',
+            allowInsecureKeySizes: true,
         },
     );
