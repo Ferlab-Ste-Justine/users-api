@@ -299,4 +299,18 @@ describe('Express app', () => {
             expect((getByIds as jest.Mock).mock.calls.length).toEqual(1);
         });
     });
+
+    // Not mocked: the uuid guard rejects before any database call, so this covers the real dal. SJIP-1600.
+    describe('GET /saved-filters/withQueryId/:id', () => {
+        it('should return 403 if no Authorization header', async () =>
+            request(app).get('/saved-filters/withQueryId/0a1292c2-0bab-4190-a8d1-6db6e125af8a').expect(403));
+
+        it('should answer 400 rather than leave the request hanging when the id is not a uuid', async () => {
+            const token = getToken(1000, 'keycloak_id');
+            await request(app)
+                .get('/saved-filters/withQueryId/not-a-uuid')
+                .set({ Authorization: `Bearer ${token}` })
+                .expect(400, { error: 'A saved filter query id must be a valid UUID.' });
+        });
+    });
 });

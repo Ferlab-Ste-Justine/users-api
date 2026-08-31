@@ -1,7 +1,7 @@
 import createHttpError from 'http-errors';
 import { StatusCodes } from 'http-status-codes';
-import { Op } from 'sequelize';
-import { v4 as uuid } from 'uuid';
+import { Op, QueryTypes } from 'sequelize';
+import { v4 as uuid, validate as validateUuid } from 'uuid';
 
 import sequelizeConnection from '../config';
 import SavedFilterModel, { ISavedFilterInput, ISavedFilterOutput } from '../models/SavedFilter';
@@ -110,24 +110,32 @@ export const destroy = async (keycloak_id: string, id: string): Promise<boolean>
     return !!deletedCount;
 };
 
-export const getFiltersUsingQuery = async (queryID: string, keycloak_id: string) =>
-    await sequelizeConnection
-        .query(
-            `with queries
-                      as (SELECT id, type, keycloak_id, queries, title, queries::JSONB[]::TEXT queriesText
-                          from saved_filters)
-             select *
-             from queries
-             where queriesText ~ '${queryID}'
-               and keycloak_id = '${keycloak_id}'
-               and type = 'filter';`,
-        )
-        .then((res: any) =>
-            res[0].map((r) => {
-                delete r.queriestext;
-                return r;
-            }),
-        );
+export const getFiltersUsingQuery = async (queryID: string, keycloak_id: string): Promise<ISavedFilterOutput[]> => {
+    if (!validateUuid(queryID)) {
+        throw createHttpError(StatusCodes.BAD_REQUEST, 'A saved filter query id must be a valid UUID.');
+    }
+
+    // strpos, not `~`: the match has to stay literal, a regex would still accept metacharacters.
+    const rows = await sequelizeConnection.query<ISavedFilterOutput & { queriestext?: string }>(
+        `with queries
+                  as (SELECT id, type, keycloak_id, queries, title, queries::JSONB[]::TEXT queriesText
+                      from saved_filters)
+         select *
+         from queries
+         where strpos(queriesText, $queryID) > 0
+           and keycloak_id = $keycloak_id
+           and type = 'filter';`,
+        {
+            bind: { queryID, keycloak_id },
+            type: QueryTypes.SELECT,
+        },
+    );
+
+    return rows.map((row) => {
+        delete row.queriestext;
+        return row;
+    });
+};
 
 export const createQueriesAndUpdateBody = async (body, queries, keycloak_id) => {
     const newIds = [];

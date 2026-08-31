@@ -133,13 +133,13 @@ savedFiltersRouter.delete('/:id', async (req, res, next) => {
     }
 });
 
-savedFiltersRouter.get('/withQueryId/:id', async (req: any, res) => {
+savedFiltersRouter.get('/withQueryId/:id', async (req, res, next) => {
     try {
         const keycloak_id = req['kauth']?.grant?.access_token?.content?.sub;
         const result = await getFiltersUsingQuery(req.params.id, keycloak_id);
         res.status(StatusCodes.OK).send(result);
-    } catch (err) {
-        console.error(err);
+    } catch (e) {
+        next(e);
     }
 });
 
