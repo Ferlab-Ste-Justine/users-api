@@ -14,11 +14,14 @@ First, you need to have an `.env` file. With, minimally:
 - `KEYCLOAK_URL`
 - `KEYCLOAK_REALM`
 - `KEYCLOAK_CLIENT`
-- `PGHOST`
-- `PGPORT`
-- `PGDATABASE`
-- `PGUSER`
-- `PGPASSWORD`
+- `DATABASE_HOST`
+- `DATABASE_PORT`
+- `DATABASE_NAME`
+- `DATABASE_USER`
+- `DATABASE_PASSWORD`
+- `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD` — the same values again, read by `node-pg-migrate` instead of by the app
+
+:warning: Comments in `.env` must start with `#`. A line starting with `;` is skipped silently by `dotenv`, but makes `docker compose` refuse to parse the file at all.
 
 Then, 
 ```
@@ -55,6 +58,38 @@ ALTER TABLE users DROP COLUMN email;
 - Run `npm run migrate up`, it will apply your last changes.
 - You need to rollback? Run `npm run migrate down`, it will roll back your last changes based on what you defined inside `-- Down Migration`.
 - To rollback more than 1 migration, run `npm run migrate down {N}` where `N` is the number of migrations to rollback.
+
+### :floppy_disk: Seed a local database
+
+Two ways to get a usable database. Prefer the first — it needs no real data.
+
+#### From the migrations
+
+```
+docker run --rm --name users-db -p 5432:5432 \
+  -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=password -e POSTGRES_DB=users postgres
+```
+
+`POSTGRES_DB` creates the database on first boot, so no `CREATE DATABASE` step is needed. Then, from another terminal, apply the schema with `npm run migrate up`.
+
+#### From a QA dump
+
+:warning: A dump contains real user records — keycloak ids, emails, saved filters. Keep it out of the repository and delete it when you are done with it.
+
+```
+# in one terminal
+docker run --rm --name users-db -p 5432:5432 \
+  -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=password -e POSTGRES_DB=users postgres
+
+# in another, from the directory holding the dump
+docker exec -i users-db psql -U postgres -d users < usersapi_qa_kf.sql
+```
+
+Naming the container with `--name` saves looking its id up through `docker ps`, and piping the dump into `docker exec -i` saves copying it into the container first.
+
+#### Pointing the app at it
+
+With `-p 5432:5432` published, `DATABASE_HOST=localhost` works when node runs on the host. If node runs in its own container, either attach both to the same network and use the container name, or read the address off `docker inspect users-db`.
 
 ### :eyes: Access Postgres cli locally
 Assuming that the postgres container is running and that you know its ID

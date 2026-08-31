@@ -3,5 +3,5 @@ node_modules
 .vscode
 /dist
 /.idea/
-
 start.sh
+.claude/
