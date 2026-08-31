@@ -124,6 +124,22 @@ users=# \q
 
 ## Github actions
 
+### Trivy
+Scans the dependencies and the built image for `HIGH` and `CRITICAL` vulnerabilities, and fails the pull request on any finding.
+
+When it fails, triage in this order. The order is the point — starting further down the list forces versions that nobody upstream tested against:
+
+1. **Attribute it** — `npm ls <package> --omit=dev` shows which dependency pulls it in.
+2. **Check the declared range** — if the parent already allows the patched version, `npm update <package>` is enough, with no `package.json` change. This covers most findings, since they are usually a stale lockfile rather than a real conflict.
+3. **Only if the range forbids it** — add an entry to `overrides` in `package.json`.
+4. **Only if no fix is published** — add an entry to `.trivyignore.yaml`, with a justification and an `expired_at` date so it gets revisited.
+
+Reproduce a CI failure locally with the same scanner version the action reports in its log:
+```
+docker run --rm -v "$PWD":/w -w /w aquasec/trivy:<version> \
+  fs --scanners vuln --severity HIGH,CRITICAL --exit-code 1 .
+```
+
 ### Shai-Hulud
 This action check for the Shai-Hulud vulnerability.
 It checks for:
