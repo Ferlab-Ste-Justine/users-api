@@ -22,9 +22,7 @@ jobs:
           scan-type: 'fs'
           scan-ref: '.'
           severity: 'HIGH,CRITICAL'
-          # Report-only for now: pre-existing dependency advisories, none introduced by this branch.
-          # Restore to '1' with the dependency remediation.
-          exit-code: '0'
+          exit-code: '1'
 
   scan-docker:
     name: Scan Docker Image
@@ -42,6 +40,4 @@ jobs:
           image-ref: 'my-app:${{ github.sha }}'
           format: 'table'
           severity: 'HIGH,CRITICAL'
-          # Report-only for now: pre-existing dependency advisories, none introduced by this branch.
-          # Restore to '1' with the dependency remediation.
-          exit-code: '0'
+          exit-code: '1'

@@ -67,10 +67,12 @@ Two ways to get a usable database. Prefer the first — it needs no real data.
 
 ```
 docker run --rm --name users-db -p 5432:5432 \
-  -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=password -e POSTGRES_DB=users postgres
+  -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=password -e POSTGRES_DB=users postgres:14
 ```
 
 `POSTGRES_DB` creates the database on first boot, so no `CREATE DATABASE` step is needed. Then, from another terminal, apply the schema with `npm run migrate up`.
+
+:warning: Use `postgres:14`, not `postgres`. Migration `1688561786592` builds an index whose predicate calls a function selecting from an unqualified `pgmigrations`, and PostgreSQL 15 made `CREATE INDEX` run with a secure `search_path`, so the name no longer resolves. The migrations cannot build the schema from scratch on 15 or later.
 
 #### From a QA dump
 
@@ -123,6 +125,22 @@ users=# \q
 ```
 
 ## Github actions
+
+### Trivy
+Scans the dependencies and the built image for `HIGH` and `CRITICAL` vulnerabilities, and fails the pull request on any finding.
+
+When it fails, triage in this order. The order is the point — starting further down the list forces versions that nobody upstream tested against:
+
+1. **Attribute it** — `npm ls <package> --omit=dev` shows which dependency pulls it in.
+2. **Check the declared range** — if the parent already allows the patched version, `npm update <package>` is enough, with no `package.json` change. This covers most findings, since they are usually a stale lockfile rather than a real conflict.
+3. **Only if the range forbids it** — add an entry to `overrides` in `package.json`.
+4. **Only if no fix is published** — add an entry to `.trivyignore.yaml`, with a justification and an `expired_at` date so it gets revisited.
+
+Reproduce a CI failure locally with the same scanner version the action reports in its log:
+```
+docker run --rm -v "$PWD":/w -w /w aquasec/trivy:<version> \
+  fs --scanners vuln --severity HIGH,CRITICAL --exit-code 1 .
+```
 
 ### Shai-Hulud
 This action check for the Shai-Hulud vulnerability.

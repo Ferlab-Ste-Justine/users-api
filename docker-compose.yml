@@ -14,7 +14,10 @@ services:
       PGHOST: db 
       PGDATABASE: users
   db:
-    image: postgres
+    # Pinned: migration 1688561786592 indexes on a function selecting from an unqualified
+    # "pgmigrations", and PG 15+ runs CREATE INDEX with a secure search_path, so it no longer
+    # resolves. Unpinned, this tracked latest and could not build the schema from scratch.
+    image: postgres:14
     restart: always
     ports:
       - "5432:5432"

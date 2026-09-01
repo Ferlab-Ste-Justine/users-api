@@ -4,6 +4,7 @@ import request from 'supertest';
 
 import { getToken, publicKey } from '../../test/authTestUtils';
 import buildApp from '../app';
+import * as savedFilterDal from '../db/dal/savedFilter';
 import { createUser, getUserById, updateUser } from '../db/dal/user';
 import { getByIds } from '../db/dal/userSets';
 import { IUserInput } from '../db/models/User';
@@ -311,6 +312,41 @@ describe('Express app', () => {
                 .get('/saved-filters/withQueryId/not-a-uuid')
                 .set({ Authorization: `Bearer ${token}` })
                 .expect(400, { error: 'A saved filter query id must be a valid UUID.' });
+        });
+    });
+
+    // Spies rather than jest.mock: the withQueryId test above needs the real dal guard.
+    describe('DELETE /saved-filters/:id', () => {
+        const id = '7f3a9c21-4b6d-4e35-9a17-2c8be5d40f11';
+        let destroySpy: jest.SpyInstance;
+        let filtersUsingQuerySpy: jest.SpyInstance;
+
+        const deleteFilter = (path: string) =>
+            request(app)
+                .delete(path)
+                .set({ Authorization: `Bearer ${getToken(1000, 'keycloak_id')}` });
+
+        beforeEach(() => {
+            destroySpy = jest.spyOn(savedFilterDal, 'destroy');
+            destroySpy.mockResolvedValue(true);
+            filtersUsingQuerySpy = jest.spyOn(savedFilterDal, 'getFiltersUsingQuery');
+            filtersUsingQuerySpy.mockResolvedValue([]);
+        });
+
+        afterEach(() => {
+            jest.restoreAllMocks();
+        });
+
+        it('should strip the deleted query out of the filters using it when type=query', async () => {
+            await deleteFilter(`/saved-filters/${id}?type=query`).expect(200);
+
+            expect(filtersUsingQuerySpy).toHaveBeenCalledWith(id, 'keycloak_id');
+        });
+
+        it('should leave other filters alone without the type parameter', async () => {
+            await deleteFilter(`/saved-filters/${id}`).expect(200);
+
+            expect(filtersUsingQuerySpy).not.toHaveBeenCalled();
         });
     });
 });
