@@ -67,10 +67,12 @@ Two ways to get a usable database. Prefer the first — it needs no real data.
 
 ```
 docker run --rm --name users-db -p 5432:5432 \
-  -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=password -e POSTGRES_DB=users postgres
+  -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=password -e POSTGRES_DB=users postgres:14
 ```
 
 `POSTGRES_DB` creates the database on first boot, so no `CREATE DATABASE` step is needed. Then, from another terminal, apply the schema with `npm run migrate up`.
+
+:warning: Use `postgres:14`, not `postgres`. Migration `1688561786592` builds an index whose predicate calls a function selecting from an unqualified `pgmigrations`, and PostgreSQL 15 made `CREATE INDEX` run with a secure `search_path`, so the name no longer resolves. The migrations cannot build the schema from scratch on 15 or later.
 
 #### From a QA dump
 
