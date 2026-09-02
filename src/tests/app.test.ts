@@ -6,7 +6,7 @@ import { getToken, publicKey } from '../../test/authTestUtils';
 import buildApp from '../app';
 import * as savedFilterDal from '../db/dal/savedFilter';
 import { createUser, getUserById, updateUser } from '../db/dal/user';
-import { getByIds } from '../db/dal/userSets';
+import { create as createUserSet, getByIds } from '../db/dal/userSets';
 import { IUserInput } from '../db/models/User';
 
 jest.mock('../db/dal/user');
@@ -347,6 +347,63 @@ describe('Express app', () => {
             await deleteFilter(`/saved-filters/${id}`).expect(200);
 
             expect(filtersUsingQuerySpy).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('request body sanitisation', () => {
+        const sqon = {
+            op: 'and',
+            content: [
+                { op: '>=', content: { field: 'age_at_diagnosis', value: [5] } },
+                { op: '<=', content: { field: 'age_at_diagnosis', value: [10] } },
+            ],
+        };
+
+        const token = () => getToken(1000, 'keycloak_id');
+
+        beforeEach(() => {
+            (createUserSet as jest.Mock).mockReset();
+            (createUserSet as jest.Mock).mockImplementation((_keycloak_id, payload) => payload);
+        });
+
+        afterEach(() => {
+            jest.restoreAllMocks();
+        });
+
+        it('should strip markup out of the body before it reaches the route', async () => {
+            await request(app)
+                .post('/user-sets')
+                .send({ alias: '<img src=x onerror=alert(1)>Cohort', content: {} })
+                .set('Content-type', 'application/json')
+                .set({ Authorization: `Bearer ${token()}` })
+                .expect(201);
+
+            expect((createUserSet as jest.Mock).mock.calls[0][1].alias).toEqual('Cohort');
+        });
+
+        it('should leave the sqon in a user set content untouched', async () => {
+            await request(app)
+                .post('/user-sets')
+                .send({ alias: 'Cohort', content: sqon })
+                .set('Content-type', 'application/json')
+                .set({ Authorization: `Bearer ${token()}` })
+                .expect(201);
+
+            expect((createUserSet as jest.Mock).mock.calls[0][1].content).toEqual(sqon);
+        });
+
+        it('should leave the sqon in saved filter queries untouched', async () => {
+            const createSpy = jest.spyOn(savedFilterDal, 'create');
+            createSpy.mockImplementation(async (_keycloak_id, payload) => payload);
+
+            await request(app)
+                .post('/saved-filters')
+                .send({ title: 'Age range', queries: [sqon] })
+                .set('Content-type', 'application/json')
+                .set({ Authorization: `Bearer ${token()}` })
+                .expect(201);
+
+            expect(createSpy.mock.calls[0][1].queries).toEqual([sqon]);
         });
     });
 });
