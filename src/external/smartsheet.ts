@@ -1,5 +1,3 @@
-import fetch from 'node-fetch';
-
 import { smartsheetId, smartsheetToken } from '../config/env';
 import config from '../config/project';
 import { NewsletterPayload, SubscriptionStatus } from '../utils/newsletter';
@@ -102,7 +100,7 @@ export const fetchSheet = async (): Promise<Sheet> => {
         throw new Error(`Could not retrieve smartsheet : ${response.statusText}`);
     }
 
-    return response.json();
+    return (await response.json()) as Sheet;
 };
 
 export const findSubscription = (rows: Row[], newsletter_email: string): number | undefined => {

@@ -1,5 +1,3 @@
-import fetch from 'node-fetch';
-
 import UserModel from '../db/models/User';
 import { SubscriptionStatus } from '../utils/newsletter';
 import {
@@ -13,8 +11,8 @@ import {
 } from './smartsheet';
 import { Column, Row, Sheet, SubscribeNewsletterPayload } from './smartsheetTypes';
 
-const { Response } = jest.requireActual('node-fetch');
-jest.mock('node-fetch', () => jest.fn());
+const mockFetch = jest.fn();
+global.fetch = mockFetch as unknown as typeof fetch;
 
 describe('smartsheet', () => {
     const mockPayload = {
@@ -64,16 +62,16 @@ describe('smartsheet', () => {
 
     describe('handleNewsletterUpdate', () => {
         it('should handle newsletter subscription successfully', async () => {
-            fetch.mockResolvedValueOnce(new Response(JSON.stringify(mockSheet)));
+            mockFetch.mockResolvedValueOnce(new Response(JSON.stringify(mockSheet)));
 
-            fetch.mockResolvedValueOnce({
+            mockFetch.mockResolvedValueOnce({
                 ok: true,
             });
 
             const result = await handleNewsletterUpdate(mockPayload);
 
             expect(result).toEqual(SubscriptionStatus.SUBSCRIBED);
-            expect(fetch).toHaveBeenCalledTimes(2);
+            expect(mockFetch).toHaveBeenCalledTimes(2);
         });
 
         it('should handle newsletter unsubscription successfully', async () => {
@@ -92,9 +90,9 @@ describe('smartsheet', () => {
                 ],
             };
 
-            fetch.mockResolvedValueOnce(new Response(JSON.stringify(unsubscribeMockSheet)));
+            mockFetch.mockResolvedValueOnce(new Response(JSON.stringify(unsubscribeMockSheet)));
 
-            fetch.mockResolvedValueOnce({
+            mockFetch.mockResolvedValueOnce({
                 ok: true,
             });
 
@@ -103,11 +101,11 @@ describe('smartsheet', () => {
             const result = await handleNewsletterUpdate(unsubscribePayload);
 
             expect(result).toEqual(SubscriptionStatus.UNSUBSCRIBED);
-            expect(fetch).toHaveBeenCalledTimes(2);
+            expect(mockFetch).toHaveBeenCalledTimes(2);
         });
 
         it('should handle failure during newsletter subscription', async () => {
-            fetch.mockResolvedValueOnce({
+            mockFetch.mockResolvedValueOnce({
                 ok: false,
                 statusText: 'Failed',
             });
@@ -115,7 +113,7 @@ describe('smartsheet', () => {
             const result = await handleNewsletterUpdate(mockPayload);
 
             expect(result).toEqual(SubscriptionStatus.FAILED);
-            expect(fetch).toHaveBeenCalledTimes(1);
+            expect(mockFetch).toHaveBeenCalledTimes(1);
         });
 
         it('should handle missing email during newsletter update', async () => {
@@ -124,16 +122,16 @@ describe('smartsheet', () => {
             const result = await handleNewsletterUpdate(invalidPayload);
 
             expect(result).toEqual(SubscriptionStatus.FAILED);
-            expect(fetch).not.toHaveBeenCalled();
+            expect(mockFetch).not.toHaveBeenCalled();
         });
 
         it('should handle errors gracefully', async () => {
-            fetch.mockRejectedValueOnce(new Error('Network Error'));
+            mockFetch.mockRejectedValueOnce(new Error('Network Error'));
 
             const result = await handleNewsletterUpdate(mockPayload);
 
             expect(result).toEqual(SubscriptionStatus.FAILED);
-            expect(fetch).toHaveBeenCalledTimes(1);
+            expect(mockFetch).toHaveBeenCalledTimes(1);
         });
     });
     describe('getSubscriptionStatus', () => {
@@ -154,7 +152,7 @@ describe('smartsheet', () => {
             };
             const email = 'test@example.com';
 
-            fetch.mockResolvedValueOnce(new Response(JSON.stringify(subscribeMockSheet)));
+            mockFetch.mockResolvedValueOnce(new Response(JSON.stringify(subscribeMockSheet)));
 
             const result = await getSubscriptionStatus(email);
 
@@ -178,7 +176,7 @@ describe('smartsheet', () => {
             };
             const email = 'nonexistent@example.com';
 
-            fetch.mockResolvedValueOnce(new Response(JSON.stringify(unsubscribeMockSheet)));
+            mockFetch.mockResolvedValueOnce(new Response(JSON.stringify(unsubscribeMockSheet)));
 
             const result = await getSubscriptionStatus(email);
 
@@ -186,7 +184,7 @@ describe('smartsheet', () => {
         });
 
         it('should return FAILED if fetchSheet fails', async () => {
-            fetch.mockRejectedValueOnce(new Error('Network Error'));
+            mockFetch.mockRejectedValueOnce(new Error('Network Error'));
             const email = 'test@example.com';
             const result = await getSubscriptionStatus(email);
 
@@ -196,7 +194,7 @@ describe('smartsheet', () => {
 
     describe('subscribeNewsletter', () => {
         it('should subscribe to newsletter successfully', async () => {
-            fetch.mockResolvedValueOnce({
+            mockFetch.mockResolvedValueOnce({
                 ok: true,
             });
 
@@ -205,46 +203,46 @@ describe('smartsheet', () => {
             const result = await subscribeNewsletter(mockRow);
 
             expect(result).toEqual(SubscriptionStatus.SUBSCRIBED);
-            expect(fetch).toHaveBeenCalledTimes(1);
+            expect(mockFetch).toHaveBeenCalledTimes(1);
         });
 
         it('should handle failure during newsletter subscription', async () => {
-            fetch.mockRejectedValueOnce(new Error('Network Error'));
+            mockFetch.mockRejectedValueOnce(new Error('Network Error'));
 
             const mockRow = { toTop: true, cells: [] };
 
             const result = await subscribeNewsletter(mockRow);
 
             expect(result).toEqual(SubscriptionStatus.FAILED);
-            expect(fetch).toHaveBeenCalledTimes(1);
+            expect(mockFetch).toHaveBeenCalledTimes(1);
         });
     });
 
     describe('unsubscribeNewsletter', () => {
         it('should unsubscribe from newsletter successfully', async () => {
-            fetch.mockResolvedValueOnce({
+            mockFetch.mockResolvedValueOnce({
                 ok: true,
             });
 
             const result = await unsubscribeNewsletter(123);
 
             expect(result).toEqual(SubscriptionStatus.UNSUBSCRIBED);
-            expect(fetch).toHaveBeenCalledTimes(1);
+            expect(mockFetch).toHaveBeenCalledTimes(1);
         });
 
         it('should handle failure during newsletter unsubscription', async () => {
-            fetch.mockRejectedValueOnce(new Error('Network Error'));
+            mockFetch.mockRejectedValueOnce(new Error('Network Error'));
 
             const result = await unsubscribeNewsletter(123);
 
             expect(result).toEqual(SubscriptionStatus.FAILED);
-            expect(fetch).toHaveBeenCalledTimes(1);
+            expect(mockFetch).toHaveBeenCalledTimes(1);
         });
     });
 
     describe('fetchSheet', () => {
         it('should fetch sheet successfully', async () => {
-            fetch.mockResolvedValueOnce({
+            mockFetch.mockResolvedValueOnce({
                 ok: true,
                 json: () => mockSheet,
             });
@@ -252,17 +250,17 @@ describe('smartsheet', () => {
             const result = await fetchSheet();
 
             expect(result).toEqual(mockSheet);
-            expect(fetch).toHaveBeenCalledTimes(1);
+            expect(mockFetch).toHaveBeenCalledTimes(1);
         });
 
         it('should handle failure during fetching sheet', async () => {
-            fetch.mockResolvedValueOnce({
+            mockFetch.mockResolvedValueOnce({
                 ok: false,
                 statusText: 'Failed',
             });
 
             await expect(fetchSheet()).rejects.toThrow('Could not retrieve smartsheet : Failed');
-            expect(fetch).toHaveBeenCalledTimes(1);
+            expect(mockFetch).toHaveBeenCalledTimes(1);
         });
     });
 

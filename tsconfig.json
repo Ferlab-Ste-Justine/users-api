@@ -4,12 +4,12 @@
         "module": "commonjs",
         "esModuleInterop": true,
         "target": "es6",
+        "lib": ["es2022"],
         "moduleResolution": "node",
         "sourceMap": true,
         "outDir": "dist",
         "skipLibCheck": true
     },
-    "lib": ["es2015"],
     "exclude": ["node_modules"],
     "include": [
         "src/**/*"
