@@ -2,7 +2,7 @@ import { S3 } from '@aws-sdk/client-s3';
 import createHttpError from 'http-errors';
 import { StatusCodes } from 'http-status-codes';
 import { Op, Order } from 'sequelize';
-import { uuid } from 'uuidv4';
+import { v4 as uuid } from 'uuid';
 
 import { keycloakRealm, profileImageBucket } from '../../config/env';
 import config from '../../config/project';
