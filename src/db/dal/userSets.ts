@@ -81,6 +81,7 @@ export const destroy = async (keycloak_id: string, id: string): Promise<boolean>
 };
 
 /*@deprecate*/
+// eslint-disable-next-line arrow-body-style
 export const share = async (id: string, keycloak_id: string): Promise<boolean> => {
     // Make that function an identity so that it does not break the portals.
     // Once the portals are updated, this feature will be removed.

@@ -52,17 +52,18 @@ export const getEntriesByUniqueIdsAndOrganizations = async function (uniqueIds: 
 const getEntriesByProperties = async function (
     whereClause: string,
     uniqueIdParam: string,
-    bindObject: BindOrReplacements
+    bindObject: BindOrReplacements,
 ) {
     let uniqueIdWhere = '';
 
     if (uniqueIdParam?.length > 0) {
         uniqueIdWhere = `AND unique_id LIKE $uniqueIdParam`;
 
-        bindObject["uniqueIdParam"] = `%${uniqueIdParam}%`;
+        bindObject['uniqueIdParam'] = `%${uniqueIdParam}%`;
     }
 
-    const result = await VariantModel.sequelize.query(`
+    const result = await VariantModel.sequelize.query(
+        `
         SELECT unique_id, timestamp, properties, rnk
         FROM (
           SELECT
@@ -77,21 +78,22 @@ const getEntriesByProperties = async function (
         {
             type: QueryTypes.SELECT,
             bind: bindObject,
-            raw: true
-        });
+            raw: true,
+        },
+    );
 
     return result;
-}
+};
 
 export const getEntriesByPropertiesFlags = async function (
     flags: string[],
     organizationIds: string[],
-    uniqueIdParam: string
+    uniqueIdParam: string,
 ) {
     const flagsWhere = [];
 
     const bindObject = {
-        "organizationIds": organizationIds
+        organizationIds: organizationIds,
     };
 
     flags.forEach((f, index) => {
@@ -107,13 +109,13 @@ export const getEntriesByPropertiesFlags = async function (
 export const getEntriesByPropertiesNote = async function (
     hasNote: boolean,
     organizationIds: string[],
-    uniqueIdParam: string
+    uniqueIdParam: string,
 ) {
     const notesWhere = `properties ->> 'note' IS ${hasNote ? 'NOT NULL' : 'NULL'}`;
 
     const bindObject = {
-        "organizationIds": organizationIds
+        organizationIds: organizationIds,
     };
 
     return await getEntriesByProperties(notesWhere, uniqueIdParam, bindObject);
-}
+};

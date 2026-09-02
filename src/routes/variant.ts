@@ -3,7 +3,12 @@ import { StatusCodes } from 'http-status-codes';
 
 import { keycloakRealm } from '../config/env';
 import Realm from '../config/realm';
-import { addNewEntry, getEntriesByPropertiesFlags, getEntriesByPropertiesNote, getEntriesByUniqueIdsAndOrganizations } from '../db/dal/variant';
+import {
+    addNewEntry,
+    getEntriesByPropertiesFlags,
+    getEntriesByPropertiesNote,
+    getEntriesByUniqueIdsAndOrganizations,
+} from '../db/dal/variant';
 
 const CLIN_GENETICIAN_ROLE = 'clin_genetician';
 
