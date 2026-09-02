@@ -1,21 +1,13 @@
-import { S3 } from '@aws-sdk/client-s3';
 import createHttpError from 'http-errors';
 import { StatusCodes } from 'http-status-codes';
 import { Op, Order } from 'sequelize';
 import { v4 as uuid } from 'uuid';
 
-import { keycloakRealm, profileImageBucket } from '../../config/env';
+import { keycloakRealm } from '../../config/env';
 import config from '../../config/project';
 import Realm from '../../config/realm';
 import { UserValidator } from '../../utils/userValidator';
 import UserModel, { IUserInput, IUserOutput } from '../models/User';
-
-let S3Client;
-try {
-    S3Client = new S3({});
-} catch (error) {
-    console.warn('S3 client not initialized');
-}
 
 const sanitizeInputPayload = (payload: IUserInput) => {
     const {
@@ -193,29 +185,6 @@ export const searchUsers = async ({
         users: results.rows,
         total: results.count,
         allActiveUsersTotal: allActiveUsersCount,
-    };
-};
-
-export const getProfileImageUploadPresignedUrl = async (keycloak_id: string) => {
-    if (!S3Client) {
-        return {
-            s3Key: undefined,
-            presignUrl: undefined,
-        };
-    }
-
-    const s3Key = `${keycloak_id}.${config.profileImageExtension}`;
-    const presignUrl = S3Client.getSignedUrl('putObject', {
-        Bucket: profileImageBucket,
-        Key: s3Key,
-        Expires: 60 * 5,
-        ContentType: 'image/jpeg',
-        ACL: 'public-read',
-    });
-
-    return {
-        s3Key,
-        presignUrl,
     };
 };
 
