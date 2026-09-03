@@ -2,8 +2,28 @@ import { format } from '@fast-csv/format';
 
 import UserModel from '../db/models/User';
 
+// Spreadsheet software evaluates a cell whose first character is one of these, so user-supplied
+// profile text has to be neutralised before an admin opens the export in Excel.
+const FORMULA_TRIGGER = /^[=+\-@\t\r]/;
+
+const neutralizeFormula = (value: unknown): unknown => {
+    if (typeof value === 'string' && FORMULA_TRIGGER.test(value)) {
+        return `'${value}`;
+    }
+
+    if (Array.isArray(value)) {
+        return value.map(neutralizeFormula);
+    }
+
+    return value;
+};
+
 export const writeUserListInCsv = (users: UserModel[], res) => {
-    const csvStream = format({ headers: true });
+    const csvStream = format({
+        headers: true,
+        transform: (row: Record<string, unknown>) =>
+            Object.fromEntries(Object.entries(row).map(([key, value]) => [key, neutralizeFormula(value)])),
+    });
 
     res.setHeader('Content-disposition', 'attachment; filename="members.csv"');
     res.setHeader('Content-Type', 'text/csv');
