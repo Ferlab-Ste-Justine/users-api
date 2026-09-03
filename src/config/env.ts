@@ -8,6 +8,8 @@ export const keycloakURL = process.env.KEYCLOAK_URL;
 export const keycloakRealm = process.env.KEYCLOAK_REALM;
 export const keycloakClient = process.env.KEYCLOAK_CLIENT;
 
+// Unused since the upload route was removed. Kept because legacy profile_image_key rows are still
+// served from this bucket, so it cannot be retired until the bucket itself is decommissioned.
 export const profileImageBucket = process.env.PROFILE_IMAGE_BUCKET;
 
 export const dbHost = process.env.DATABASE_HOST;

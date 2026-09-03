@@ -3,15 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { Order } from 'sequelize';
 
 import { keycloakRealm } from '../config/env';
-import {
-    completeRegistration,
-    createUser,
-    deleteUser,
-    getProfileImageUploadPresignedUrl,
-    getUserById,
-    searchUsers,
-    updateUser,
-} from '../db/dal/user';
+import { completeRegistration, createUser, deleteUser, getUserById, searchUsers, updateUser } from '../db/dal/user';
 import { getUserValidator } from '../utils/userValidator';
 
 // Handles requests made to /users
@@ -66,16 +58,6 @@ usersRouter.get('/search', async (req: Request<any, any, any, CustomReqQuery>, r
             researchDomains,
             areasOfInterest,
         });
-        res.status(StatusCodes.OK).send(result);
-    } catch (e) {
-        next(e);
-    }
-});
-
-usersRouter.get('/image/presigned', async (req, res, next) => {
-    try {
-        const keycloak_id = req['kauth']?.grant?.access_token?.content?.sub;
-        const result = await getProfileImageUploadPresignedUrl(keycloak_id);
         res.status(StatusCodes.OK).send(result);
     } catch (e) {
         next(e);

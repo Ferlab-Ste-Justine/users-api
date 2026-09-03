@@ -86,7 +86,7 @@ const sendGetSubscriptionRequest = async (email: string): Promise<SubscriptionSt
         return SubscriptionStatus.FAILED;
     }
 
-    const responseData = await response.json();
+    const responseData = (await response.json()) as { status?: string };
 
     return responseData.status === SubscriptionStatus.SUBSCRIBED
         ? SubscriptionStatus.SUBSCRIBED
