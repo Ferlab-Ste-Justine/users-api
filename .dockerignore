@@ -10,3 +10,5 @@ LICENSE
 .prettierrc
 docker-compose.yml
 .vs-code
+.env*
+.claude
