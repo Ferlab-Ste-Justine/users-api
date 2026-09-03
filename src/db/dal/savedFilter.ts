@@ -148,9 +148,8 @@ export const createQueriesAndUpdateBody = async (body, queries, keycloak_id) => 
             return query;
         });
     if (toCreate.length) {
-        toCreate.forEach((query) => {
-            create(keycloak_id, query);
-        });
+        // Awaited: the beforeCreate uniqueness hook throws, and an escaped rejection kills the process.
+        await Promise.all(toCreate.map((query) => create(keycloak_id, query)));
         let newContent = JSON.stringify(structuredClone(body));
         newIds.forEach(({ newID, oldID }) => {
             newContent = newContent.replace(oldID, newID);

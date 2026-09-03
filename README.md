@@ -19,7 +19,7 @@ First, you need to have an `.env` file. With, minimally:
 - `DATABASE_NAME`
 - `DATABASE_USER`
 - `DATABASE_PASSWORD`
-- `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD` — the same values again, read by `node-pg-migrate` instead of by the app
+- `DATABASE_URL` — the same database as a connection string, read by `node-pg-migrate` instead of by the app
 
 :warning: Comments in `.env` must start with `#`. A line starting with `;` is skipped silently by `dotenv`, but makes `docker compose` refuse to parse the file at all.
 
