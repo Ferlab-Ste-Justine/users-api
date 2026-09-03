@@ -1,18 +1,21 @@
-version: '3.9'
-
 services:
-  app: 
+  app:
     build: .
-    depends_on: 
-      - db
+    depends_on:
+      # The list form only waits for the container to start, but start:prd runs the
+      # migrations first and they fail outright if postgres is not accepting yet.
+      db:
+        condition: service_healthy
     ports:
       - "1212:1212"
     environment:
-      PGUSER: postgres
-      PGPASSWORD: password 
-      PGPORT: 5432
-      PGHOST: db 
-      PGDATABASE: users
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_NAME: users
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: password
+      # The app reads the DATABASE_* set above; node-pg-migrate reads DATABASE_URL.
+      DATABASE_URL: postgres://postgres:password@db:5432/users
   db:
     # Pinned: migration 1688561786592 indexes on a function selecting from an unqualified
     # "pgmigrations", and PG 15+ runs CREATE INDEX with a secure search_path, so it no longer
