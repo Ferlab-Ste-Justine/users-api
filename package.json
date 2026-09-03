@@ -17,8 +17,8 @@
         "migrate": "node-pg-migrate",
         "dev": "nodemon",
         "start": "ts-node ./src/index.ts",
-        "start:prd": "node migrateUpWithWrapper.mjs && node ./dist/src/index.js",
-        "localstack": "node migrateUpWithWrapper.mjs && node --inspect=0.0.0.0 ./dist/src/index.js",
+        "start:prd": "node-pg-migrate up && node ./dist/src/index.js",
+        "localstack": "node-pg-migrate up && node --inspect=0.0.0.0 ./dist/src/index.js",
         "test": "jest --silent",
         "test:watch": "jest --watch"
     },

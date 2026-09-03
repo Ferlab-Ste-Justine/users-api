@@ -17,5 +17,3 @@ process.env.MAILCHIMP_USERNAME
 process.env.MAILCHIMP_KF_LIST_ID
 process.env.MAILCHIMP_KF_DATASET_LIST_ID
 process.env.NODE_ENV
-process.env.PGUSER
-process.env.PGPASSWORD

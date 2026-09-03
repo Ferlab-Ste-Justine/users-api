@@ -18,7 +18,6 @@ escape_file () {
 }
 
 # file to escape before scanning (the patterns listed in shai-hulud-allowed-patterns.txt will be removed)
-escape_file "$DIRECTORY/migrateUpWithWrapper.mjs"
 escape_file "$DIRECTORY/src/config/env.ts"
 escape_file "$DIRECTORY/src/db/config.ts"
 

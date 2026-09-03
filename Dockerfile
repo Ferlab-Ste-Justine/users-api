@@ -17,7 +17,6 @@ WORKDIR /app
 COPY --from=build-image ./app/dist ./dist
 COPY package* ./
 COPY migrations ./migrations
-COPY migrateUpWithWrapper.mjs ./migrateUpWithWrapper.mjs
 # --omit=optional drops chromedriver, an unused optional dependency of keycloak-connect that
 # pulls in a large subtree (axios, proxy-agent, basic-ftp) this API never loads.
 RUN npm ci --omit=dev --omit=optional
