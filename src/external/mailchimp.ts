@@ -1,3 +1,5 @@
+import { createHash } from 'crypto';
+
 import { mailchimpApiKey, mailchimpKidsfirstListId, mailchimpUsername } from '../config/env';
 import { NewsletterPayload, SubscriptionStatus } from '../utils/newsletter';
 
@@ -93,6 +95,9 @@ const sendGetSubscriptionRequest = async (email: string): Promise<SubscriptionSt
         : SubscriptionStatus.UNSUBSCRIBED;
 };
 
-// Encoded: the email lands in the URL path, where a "/" or ".." would retarget the call at another list.
+// The api addresses a contact by the md5 of its lowercased email, never by the email itself. Hashing
+// is also what stops a "/" or ".." in the value from retargeting the call at another list.
+const subscriberHash = (email: string) => createHash('md5').update(email.toLowerCase()).digest('hex');
+
 const retrieveMailchimpUrl = (server: string, listId: string, email: string) =>
-    `https://${server}.api.mailchimp.com/3.0/lists/${listId}/members/${encodeURIComponent(email)}`;
+    `https://${server}.api.mailchimp.com/3.0/lists/${listId}/members/${subscriberHash(email)}`;

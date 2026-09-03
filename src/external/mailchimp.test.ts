@@ -36,15 +36,28 @@ describe('Mailchimp service', () => {
     describe('Request URL', () => {
         const TRAVERSAL = '../../../lists/OTHER-LIST/members/victim@example.org';
 
-        it('keeps the email inside its own path segment', async () => {
+        const ok = () =>
             (global.fetch as unknown as jest.Mock).mockImplementation(() => ({ status: 200, text: () => '' }));
+
+        const urlSent = () => (global.fetch as unknown as jest.Mock).mock.calls[0][0];
+
+        // Mailchimp's own worked example, fed in mixed case so the lowercasing is covered too.
+        it("matches mailchimp's documented subscriber hash", async () => {
+            ok();
+
+            await handleNewsletterUpdate({ ...payload, email: 'Urist.McVankab@FreddiesJokes.com' });
+
+            expect(new URL(urlSent()).pathname).toBe('/3.0/lists/KF_ID/members/62eeb292278cc15f5817cb78f7790b08');
+        });
+
+        it('reduces a path traversal to a hash instead of retargeting the call', async () => {
+            ok();
 
             await handleNewsletterUpdate({ ...payload, email: TRAVERSAL });
 
-            const [url] = (global.fetch as unknown as jest.Mock).mock.calls[0];
-            const { pathname } = new URL(url);
+            const { pathname } = new URL(urlSent());
 
-            expect(pathname).toMatch(/^\/3\.0\/lists\/KF_ID\/members\//);
+            expect(pathname).toMatch(/^\/3\.0\/lists\/KF_ID\/members\/[0-9a-f]{32}$/);
             expect(pathname).not.toContain('/lists/OTHER-LIST/');
         });
     });
