@@ -4,11 +4,13 @@ import request from 'supertest';
 
 import { getToken, publicKey } from '../../test/authTestUtils';
 import buildApp from '../app';
+import { subscribeNewsletter } from '../db/dal/newsletter';
 import * as savedFilterDal from '../db/dal/savedFilter';
 import { createUser, getUserById, updateUser } from '../db/dal/user';
 import { create as createUserSet, getByIds } from '../db/dal/userSets';
 import { IUserInput } from '../db/models/User';
 
+jest.mock('../db/dal/newsletter');
 jest.mock('../db/dal/user');
 jest.mock('../db/dal/userSets');
 
@@ -347,6 +349,39 @@ describe('Express app', () => {
             await deleteFilter(`/saved-filters/${id}`).expect(200);
 
             expect(filtersUsingQuerySpy).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('PUT /newsletter/subscribe', () => {
+        const send = (body: object) =>
+            request(app)
+                .put('/newsletter/subscribe')
+                .set({ Authorization: `Bearer ${getToken()}` })
+                .send(body);
+
+        beforeEach(() => {
+            (subscribeNewsletter as jest.Mock).mockReset();
+        });
+
+        // The value reaches the Mailchimp URL path, so a non-email must not get that far.
+        it('should return 400 and not call the dal when the email is a path traversal', async () => {
+            await send({ newsletter_email: '../../../lists/OTHER-LIST/members/victim@example.org' }).expect(400);
+
+            expect(subscribeNewsletter).not.toHaveBeenCalled();
+        });
+
+        it('should return 400 when the email is missing', async () => {
+            await send({}).expect(400);
+
+            expect(subscribeNewsletter).not.toHaveBeenCalled();
+        });
+
+        it('should pass a valid email through', async () => {
+            (subscribeNewsletter as jest.Mock).mockResolvedValue({ newsletter_email: 'jane@example.org' });
+
+            await send({ newsletter_email: 'jane@example.org' }).expect(200);
+
+            expect(subscribeNewsletter).toHaveBeenCalledWith('12345-678-90abcdef', 'jane@example.org');
         });
     });
 

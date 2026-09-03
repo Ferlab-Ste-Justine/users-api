@@ -1,5 +1,7 @@
 import { Router } from 'express';
+import createHttpError from 'http-errors';
 import { StatusCodes } from 'http-status-codes';
+import validator from 'validator';
 
 import { refreshNewsletterStatus, subscribeNewsletter, unsubscribeNewsletter } from '../db/dal/newsletter';
 
@@ -20,7 +22,14 @@ newsletterRouter.put('/refresh/:newsletter_type?', async (req, res, next) => {
 newsletterRouter.put('/subscribe/:newsletter_type?', async (req, res, next) => {
     try {
         const keycloak_id = req['kauth']?.grant?.access_token?.content?.sub;
-        const result = await subscribeNewsletter(keycloak_id, req.body.newsletter_email);
+        const newsletter_email = req.body?.newsletter_email;
+
+        // Checked here because it reaches the Mailchimp URL before the model validator ever runs.
+        if (typeof newsletter_email !== 'string' || !validator.isEmail(newsletter_email)) {
+            throw createHttpError(StatusCodes.BAD_REQUEST, 'A valid newsletter_email is required.');
+        }
+
+        const result = await subscribeNewsletter(keycloak_id, newsletter_email);
 
         res.status(StatusCodes.OK).send(result);
     } catch (e) {

@@ -93,5 +93,6 @@ const sendGetSubscriptionRequest = async (email: string): Promise<SubscriptionSt
         : SubscriptionStatus.UNSUBSCRIBED;
 };
 
+// Encoded: the email lands in the URL path, where a "/" or ".." would retarget the call at another list.
 const retrieveMailchimpUrl = (server: string, listId: string, email: string) =>
-    `https://${server}.api.mailchimp.com/3.0/lists/${listId}/members/${email}`;
+    `https://${server}.api.mailchimp.com/3.0/lists/${listId}/members/${encodeURIComponent(email)}`;

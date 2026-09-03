@@ -33,6 +33,22 @@ describe('Mailchimp service', () => {
         action: SubscriptionStatus.SUBSCRIBED,
     };
 
+    describe('Request URL', () => {
+        const TRAVERSAL = '../../../lists/OTHER-LIST/members/victim@example.org';
+
+        it('keeps the email inside its own path segment', async () => {
+            (global.fetch as unknown as jest.Mock).mockImplementation(() => ({ status: 200, text: () => '' }));
+
+            await handleNewsletterUpdate({ ...payload, email: TRAVERSAL });
+
+            const [url] = (global.fetch as unknown as jest.Mock).mock.calls[0];
+            const { pathname } = new URL(url);
+
+            expect(pathname).toMatch(/^\/3\.0\/lists\/KF_ID\/members\//);
+            expect(pathname).not.toContain('/lists/OTHER-LIST/');
+        });
+    });
+
     describe('Update subscription state', () => {
         it('should do nothing and return FAILED if email is empty', async () => {
             const inputNull = { ...payload, email: null };
