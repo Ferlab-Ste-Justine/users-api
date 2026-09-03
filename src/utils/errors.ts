@@ -30,7 +30,19 @@ export const globalErrorHandler = (err: unknown, _req: Request, res: Response, _
 };
 
 export const globalErrorLogger = (err: unknown, _req: Request, _res: Response, next: NextFunction): void => {
+    // Stack only: Sequelize errors expose the failed SQL and its bind values as enumerable
+    // properties, which console.log would expand into the logs.
+    let logLine: string;
+
+    if (!(err instanceof Error)) {
+        logLine = 'Non-Error value thrown';
+    } else if (err.stack) {
+        logLine = err.stack;
+    } else {
+        logLine = `${err.name}: ${err.message}`;
+    }
+
     // eslint-disable-next-line no-console
-    console.log(err);
+    console.log(logLine);
     next(err);
 };
