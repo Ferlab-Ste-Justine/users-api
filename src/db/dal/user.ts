@@ -326,8 +326,9 @@ export const resetAllConsents = async (): Promise<number> => {
             updated_date: new Date(),
         },
         {
-            where: {},
-            returning: true,
+            where: {
+                deleted: false,
+            },
         },
     );
 
